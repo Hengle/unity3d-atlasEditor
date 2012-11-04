@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEditor;
+using System.Collections.Generic;
 
 
 public enum ATLAS_SIZE{
@@ -11,6 +12,20 @@ public enum ATLAS_SIZE{
 		_2056=2056,
 		_4112=4112		
 	}
+
+
+public class TextureOnCanvas{
+	public Rect rect;
+	public Texture2D texture;
+	public TextureOnCanvas (Rect rect, Texture2D texture)
+	{
+		this.rect = rect;
+		this.texture = texture;
+	}
+
+
+}
+
 
 public class FreeAtlasEditor : EditorWindow {
 	[SerializeField]
@@ -25,6 +40,8 @@ public class FreeAtlasEditor : EditorWindow {
 	static Color bgColor2=new Color(0.8f,0.8f,0.8f,1f);
 	int bgCubeSize=8;
 	
+	
+	private List<TextureOnCanvas> texturesOnCanvas;
 	
 	
 	public Vector2 scrollPosition = Vector2.zero;
@@ -45,6 +62,7 @@ public class FreeAtlasEditor : EditorWindow {
 	{
 		Debug.Log("im in init");		
 		recreateAtlasBG ();
+		texturesOnCanvas=new List<TextureOnCanvas>();
 	}
 	
 	
@@ -73,10 +91,14 @@ public class FreeAtlasEditor : EditorWindow {
 				
 				
 				GUILayoutUtility.GetRect(width,height);
-				//GUI.DrawTexture(new Rect(0,0,width,height),atlasBG);	
+				
 				EditorGUI.DrawPreviewTexture(new Rect(0,0,width,height),atlasCanvasBG);	
-				//Rect r = GUILayoutUtility.GetAspectRect(1.0f,GUILayout.Width(width),GUILayout.Height(height));											
-				//EditorGUI.DrawPreviewTexture(r,atlasBG,null,ScaleMode.StretchToFill);		
+				
+				foreach(TextureOnCanvas toc in  texturesOnCanvas){
+					EditorGUI.DrawPreviewTexture(toc.rect,toc.texture);	
+				}	
+				
+		
 			EditorGUILayout.EndScrollView();
 		
 		EditorGUILayout.EndVertical();
@@ -100,7 +122,40 @@ public class FreeAtlasEditor : EditorWindow {
 
 	void HandleDroppedObjects (Object[] objectReferences)
 	{
-		Debug.Log("income objects ="+objectReferences.Length);
+		bool addedSomething=false;
+		foreach (Object item in objectReferences) {
+			if(typeof(Texture2D)==item.GetType()){
+				Texture2D texture=(Texture2D)item;
+				addedSomething=true;
+				
+				
+				
+				if (isTextureCanvasContainsTexture (texture)){
+					Debug.Log("one of texture is already on Canvas");
+				} else {
+					addTextureToCanvas(texture);	
+				}
+				
+			}
+		}
+		
+		if (!addedSomething)
+			Debug.Log("there was no any Texture2D in dropped content");
+	}
+
+	void addTextureToCanvas (Texture2D texture)
+	{
+		Rect rect=new Rect(0,0,texture.width,texture.height);
+		
+		texturesOnCanvas.Add(new TextureOnCanvas(rect, texture));
+		//texturesOnCanvas.Add(texture);
+	}
+	
+	
+	
+	private bool isTextureCanvasContainsTexture (Texture2D texture)
+	{
+		return texturesOnCanvas.Find(toc => toc.texture == texture)!=null;
 	}
 	
 	
@@ -112,7 +167,7 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	//here we just generate Texture2d
 	 Texture2D createAtlasCanvasBGTexture(int width, int height){
-		Debug.Log("im here in atlas creation");
+		
 		Texture2D texture=new Texture2D(width,height);
 		Color[] pixels=new Color[width*height];
 		Color rowFirstColor=bgColor1;

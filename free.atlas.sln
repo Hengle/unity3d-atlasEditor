@@ -5,8 +5,6 @@ Project("{6822CA58-F9CE-ED86-68D9-FF6F11805ADD}") = "free.atlas", "Assembly-CSha
 EndProject
 Project("{6822CA58-F9CE-ED86-68D9-FF6F11805ADD}") = "free.atlas", "Assembly-CSharp-Editor.csproj", "{7BB6E481-09FE-111F-351F-6822C887CAD0}"
 EndProject
-Project("{6822CA58-F9CE-ED86-68D9-FF6F11805ADD}") = "free.atlas", "Assembly-UnityScript-Editor.unityproj", "{6F2C2312-CE01-E719-E8DA-E269CA40DC08}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,15 +19,11 @@ Global
 		{7BB6E481-09FE-111F-351F-6822C887CAD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BB6E481-09FE-111F-351F-6822C887CAD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BB6E481-09FE-111F-351F-6822C887CAD0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6F2C2312-CE01-E719-E8DA-E269CA40DC08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F2C2312-CE01-E719-E8DA-E269CA40DC08}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6F2C2312-CE01-E719-E8DA-E269CA40DC08}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6F2C2312-CE01-E719-E8DA-E269CA40DC08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-																												GlobalSection(MonoDevelopProperties) = preSolution
+																														GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Assembly-CSharp.csproj
 		Policies = $0
 		$0.TextStylePolicy = $1
