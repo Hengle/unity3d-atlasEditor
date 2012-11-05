@@ -3,6 +3,11 @@ using System.Collections;
 using UnityEditor;
 using System.Collections.Generic;
 
+/*
+ * Thanks AngryAnt for a greate drag'n'drop example at htis page http://angryant.com/2009/09/18/gui-drag-drop/
+ * 
+ */
+
 
 public enum ATLAS_SIZE{
 		_128=128,
@@ -17,12 +22,41 @@ public enum ATLAS_SIZE{
 public class TextureOnCanvas{
 	public Rect rect;
 	public Texture2D texture;
+	private bool isDragging=false;
+	private Vector2 mouseStartPosition;
+	
+	
 	public TextureOnCanvas (Rect rect, Texture2D texture)
 	{
 		this.rect = rect;
 		this.texture = texture;
 	}
-
+	
+	public void drag(){
+		if (Event.current.type == EventType.MouseUp){
+			isDragging = false;
+			
+		} else if (Event.current.type == EventType.MouseDown && rect.Contains (Event.current.mousePosition)){
+			isDragging = true;			
+			
+			mouseStartPosition=Event.current.mousePosition;
+			
+			Event.current.Use();	
+			
+		}
+		
+		if (isDragging){
+			
+			Vector2 currentOffset=Event.current.mousePosition-mouseStartPosition;
+			
+			rect.x+=currentOffset.x;
+			rect.y+=currentOffset.y;
+			
+			mouseStartPosition=Event.current.mousePosition;
+			
+		}
+		
+	}
 
 }
 
@@ -43,7 +77,6 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	private List<TextureOnCanvas> texturesOnCanvas;
 	
-	
 	public Vector2 scrollPosition = Vector2.zero;
 	GUIContent atlasContent=new GUIContent("atlas");
 	GUIStyle atlasStyle=GUIStyle.none;
@@ -59,8 +92,7 @@ public class FreeAtlasEditor : EditorWindow {
 	}
 
 	void initParams ()
-	{
-		Debug.Log("im in init");		
+	{		
 		recreateAtlasBG ();
 		texturesOnCanvas=new List<TextureOnCanvas>();
 	}
@@ -73,7 +105,7 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	void OnGUI () {
 		EditorGUILayout.BeginVertical();
-			EditorGUILayout.BeginHorizontal ();
+			EditorGUILayout.BeginHorizontal (GUILayout.MinHeight(150f));
 				ATLAS_SIZE newWidth =(ATLAS_SIZE) EditorGUILayout.EnumPopup("atlas width",atlasWidth);
 				ATLAS_SIZE newHeight =(ATLAS_SIZE) EditorGUILayout.EnumPopup("atlas height",atlasHeight);	
 				
@@ -95,7 +127,10 @@ public class FreeAtlasEditor : EditorWindow {
 				EditorGUI.DrawPreviewTexture(new Rect(0,0,width,height),atlasCanvasBG);	
 				
 				foreach(TextureOnCanvas toc in  texturesOnCanvas){
+					
+					toc.drag();
 					EditorGUI.DrawPreviewTexture(toc.rect,toc.texture);	
+					Repaint();
 				}	
 				
 		
