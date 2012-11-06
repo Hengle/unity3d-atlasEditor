@@ -32,15 +32,18 @@ public class TextureOnCanvas{
 		this.texture = texture;
 	}
 	
-	public void drag(){
+	public void draw(){
 		if (Event.current.type == EventType.MouseUp){
 			isDragging = false;
-			
+			Debug.Log("mous up rect="+rect);
+			if (FreeAtlasEditor.stopDragging!=null)
+				FreeAtlasEditor.stopDragging();
 		} else if (Event.current.type == EventType.MouseDown && rect.Contains (Event.current.mousePosition)){
 			isDragging = true;			
 			
 			mouseStartPosition=Event.current.mousePosition;
-			
+			Debug.Log("mouseStartPosition = "+mouseStartPosition);
+				
 			Event.current.Use();	
 			
 		}
@@ -53,13 +56,19 @@ public class TextureOnCanvas{
 			rect.y+=currentOffset.y;
 			
 			mouseStartPosition=Event.current.mousePosition;
-			
+			if (FreeAtlasEditor.dragInProgress!=null)
+				FreeAtlasEditor.dragInProgress();
+			Debug.Log("dragging rect="+rect);
 		}
+		EditorGUI.DrawPreviewTexture(rect,texture);	
 		
 	}
 
 }
 
+
+public delegate void DragInProgress();
+public delegate void StopDragging();
 
 public class FreeAtlasEditor : EditorWindow {
 	[SerializeField]
@@ -81,6 +90,8 @@ public class FreeAtlasEditor : EditorWindow {
 	GUIContent atlasContent=new GUIContent("atlas");
 	GUIStyle atlasStyle=GUIStyle.none;
 	
+	public static DragInProgress dragInProgress;
+	public static StopDragging stopDragging;
 	
 	[MenuItem ("Window/Free Atlas Maker")]
     static void ShowWindow () {        
@@ -95,12 +106,21 @@ public class FreeAtlasEditor : EditorWindow {
 	{		
 		recreateAtlasBG ();
 		texturesOnCanvas=new List<TextureOnCanvas>();
+		dragInProgress+=onDragInProgress;
+		stopDragging+=onStopDragging;
 	}
 	
 	
+	private void onDragInProgress(){
+		Repaint();	
+	}
 	
-	
-	
+	private void onStopDragging(){
+		Repaint();	
+	}
+	void Update(){
+		Repaint();	
+	}
 	
 	
 	void OnGUI () {
@@ -128,9 +148,8 @@ public class FreeAtlasEditor : EditorWindow {
 				
 				foreach(TextureOnCanvas toc in  texturesOnCanvas){
 					
-					toc.drag();
-					EditorGUI.DrawPreviewTexture(toc.rect,toc.texture);	
-					Repaint();
+					toc.draw();
+					
 				}	
 				
 		
