@@ -4,7 +4,7 @@ using UnityEditor;
 using System.Collections.Generic;
 
 /*
- * Thanks AngryAnt for a greate drag'n'drop example at htis page http://angryant.com/2009/09/18/gui-drag-drop/
+ * Thanks AngryAnt for a greate drag'n'drop example at this page http://angryant.com/2009/09/18/gui-drag-drop/
  * 
  */
 
@@ -19,16 +19,16 @@ public enum ATLAS_SIZE{
 	}
 
 
-public class TextureOnCanvas{
-	public Rect rect;
+public class TextureOnCanvas{	
+	public Rect canvasRect;
 	public Texture2D texture;
 	private bool isDragging=false;
 	private Vector2 mouseStartPosition;
 	
 	
-	public TextureOnCanvas (Rect rect, Texture2D texture)
+	public TextureOnCanvas (Rect canvasRect, Texture2D texture)
 	{
-		this.rect = rect;
+		this.canvasRect = canvasRect;
 		this.texture = texture;
 	}
 	
@@ -37,35 +37,48 @@ public class TextureOnCanvas{
 		
 		if (Event.current.type == EventType.MouseUp){
 			isDragging = false;
-			Debug.Log("mous up rect="+rect);
 			if (FreeAtlasEditor.stopDragging!=null)
 				FreeAtlasEditor.stopDragging();
-		} else if (Event.current.type == EventType.MouseDown && rect.Contains (Event.current.mousePosition)){
-			isDragging = true;			
-			
-			mouseStartPosition=Event.current.mousePosition;
-			Debug.Log("mouseStartPosition = "+mouseStartPosition);
-				
+		} else if (Event.current.type == EventType.MouseDown && canvasRect.Contains (Event.current.mousePosition)){
+			isDragging = true;						
+			mouseStartPosition=Event.current.mousePosition;							
 			Event.current.Use();	
 			
 		}
 		
-		if (isDragging){
+		if (isDragging){ 
 			
 			Vector2 currentOffset=Event.current.mousePosition-mouseStartPosition;
 			
-			rect.x+=currentOffset.x;
-			rect.y+=currentOffset.y;
-		
-			mouseStartPosition=Event.current.mousePosition;
-			
+			if (Event.current.type == EventType.Repaint){
+				canvasRect.x+=currentOffset.x;
+				canvasRect.y+=currentOffset.y;
+				
+				if (canvasRect.x < 0){
+					canvasRect.x=0;					
+				} 
+				
+				if (canvasRect.y <0){
+					canvasRect.y=0;					
+				}
+				
+				if (canvasRect.xMax > (int)FreeAtlasEditor.atlasWidth){
+					canvasRect.x=	(int)FreeAtlasEditor.atlasWidth-texture.width;
+				}
+				
+				if (canvasRect.yMax > (int)FreeAtlasEditor.atlasHeight){
+					canvasRect.y=	(int)FreeAtlasEditor.atlasHeight-texture.height;
+				}
+				
+				
+				mouseStartPosition=Event.current.mousePosition;
+				
+			}
 			if (FreeAtlasEditor.dragInProgress!=null)
 				FreeAtlasEditor.dragInProgress();
-			Debug.Log("dragging rect="+rect+"           "+Event.current);
 		}
 		
-		
-			EditorGUI.DrawPreviewTexture(rect,texture);	
+		EditorGUI.DrawPreviewTexture(canvasRect,texture);	
 		
 	}
 
@@ -77,10 +90,10 @@ public delegate void StopDragging();
 
 public class FreeAtlasEditor : EditorWindow {
 	[SerializeField]
-	ATLAS_SIZE atlasWidth=ATLAS_SIZE._1024;
+	public static ATLAS_SIZE atlasWidth=ATLAS_SIZE._512;
 	
 	[SerializeField]
-	ATLAS_SIZE atlasHeight=ATLAS_SIZE._1024;
+	public static ATLAS_SIZE atlasHeight=ATLAS_SIZE._512;
 	
 	[SerializeField]
 	Texture2D atlasCanvasBG;
@@ -92,8 +105,6 @@ public class FreeAtlasEditor : EditorWindow {
 	private List<TextureOnCanvas> texturesOnCanvas;
 	
 	public Vector2 scrollPosition = Vector2.zero;
-	GUIContent atlasContent=new GUIContent("atlas");
-	GUIStyle atlasStyle=GUIStyle.none;
 	
 	public static DragInProgress dragInProgress;
 	public static StopDragging stopDragging;
@@ -131,7 +142,7 @@ public class FreeAtlasEditor : EditorWindow {
 	void OnGUI () {
 		
 		EditorGUILayout.BeginVertical();
-			EditorGUILayout.BeginHorizontal (GUILayout.MinHeight(150f));
+			EditorGUILayout.BeginHorizontal (GUILayout.MinHeight(100f));
 				ATLAS_SIZE newWidth =(ATLAS_SIZE) EditorGUILayout.EnumPopup("atlas width",atlasWidth);
 				ATLAS_SIZE newHeight =(ATLAS_SIZE) EditorGUILayout.EnumPopup("atlas height",atlasHeight);	
 				
