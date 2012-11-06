@@ -33,6 +33,8 @@ public class TextureOnCanvas{
 	}
 	
 	public void draw(){
+		
+		
 		if (Event.current.type == EventType.MouseUp){
 			isDragging = false;
 			Debug.Log("mous up rect="+rect);
@@ -54,13 +56,16 @@ public class TextureOnCanvas{
 			
 			rect.x+=currentOffset.x;
 			rect.y+=currentOffset.y;
-			
+		
 			mouseStartPosition=Event.current.mousePosition;
+			
 			if (FreeAtlasEditor.dragInProgress!=null)
 				FreeAtlasEditor.dragInProgress();
-			Debug.Log("dragging rect="+rect);
+			Debug.Log("dragging rect="+rect+"           "+Event.current);
 		}
-		EditorGUI.DrawPreviewTexture(rect,texture);	
+		
+		
+			EditorGUI.DrawPreviewTexture(rect,texture);	
 		
 	}
 
@@ -124,6 +129,7 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	
 	void OnGUI () {
+		
 		EditorGUILayout.BeginVertical();
 			EditorGUILayout.BeginHorizontal (GUILayout.MinHeight(150f));
 				ATLAS_SIZE newWidth =(ATLAS_SIZE) EditorGUILayout.EnumPopup("atlas width",atlasWidth);
