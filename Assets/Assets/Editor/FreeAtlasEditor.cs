@@ -97,6 +97,8 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	[SerializeField]
 	Texture2D atlasCanvasBG;
+	
+	static Texture2D borderTexture;
 	static Color bgColor1=Color.white;
 	static Color bgColor2=new Color(0.8f,0.8f,0.8f,1f);
 	static int bgCubeSize=8;
@@ -120,15 +122,18 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	static void Init(){
 		createAtlasCanvasBGTexture((int)atlasWidth,(int)atlasHeight);
+		borderTexture=createOnePxBorderTexture();
 	}
 	
 	
 	void initParams ()
-	{		
+	{	
+		
 		recreateAtlasBG ();
 		texturesOnCanvas=new List<TextureOnCanvas>();
 		dragInProgress+=onDragInProgress;
 		stopDragging+=onStopDragging;
+		
 	}
 	
 	
@@ -175,6 +180,16 @@ public class FreeAtlasEditor : EditorWindow {
 						toc.draw();
 						
 					}	
+			
+					foreach(TextureOnCanvas toc in  texturesOnCanvas){
+						Color color=GUI.color;
+						GUI.color=Color.yellow;
+						Graphics.DrawTexture(toc.canvasRect, borderTexture,5,5,5,5);
+						GUI.color=color;
+					}	
+			
+			
+			
 				}
 		
 			EditorGUILayout.EndScrollView();
@@ -240,17 +255,17 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	
 	
-	Texture2D createOnePxBorderTexture(){
-		string assetPath="Assets/Editor/Texture/onePxBorder.asset";
+	static Texture2D createOnePxBorderTexture(){
+		string assetPath="Assets/Assets/Editor/Texture/onePxBorder.asset";
 		
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Mesh));
 		if (texture==null){
 			texture=new Texture2D(3,3);
 			Color[] c=new Color[9];
 			for (int i=0;i<9;i++){
-				c[i]=new Color(0,0,0,1);	
+				c[i]=new Color(1,1,1,1);	
 			}
-			c[4]=new Color(0,0,0,0); //center alpha is empty
+			c[4]=new Color(1,1,1,0); //center alpha is empty
 			texture.SetPixels(c);
 			texture.Apply();
 			AssetDatabase.CreateAsset(texture,assetPath);
