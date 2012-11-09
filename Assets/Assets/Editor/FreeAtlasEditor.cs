@@ -99,7 +99,7 @@ public class FreeAtlasEditor : EditorWindow {
 	Texture2D atlasCanvasBG;
 	static Color bgColor1=Color.white;
 	static Color bgColor2=new Color(0.8f,0.8f,0.8f,1f);
-	int bgCubeSize=8;
+	static int bgCubeSize=8;
 	
 	
 	private List<TextureOnCanvas> texturesOnCanvas;
@@ -117,7 +117,12 @@ public class FreeAtlasEditor : EditorWindow {
 	void OnEnable() {
 		initParams ();	
 	}
-
+	
+	static void Init(){
+		createAtlasCanvasBGTexture((int)atlasWidth,(int)atlasHeight);
+	}
+	
+	
 	void initParams ()
 	{		
 		recreateAtlasBG ();
@@ -161,14 +166,16 @@ public class FreeAtlasEditor : EditorWindow {
 				
 				GUILayoutUtility.GetRect(width,height);
 				
-				EditorGUI.DrawPreviewTexture(new Rect(0,0,width,height),atlasCanvasBG);	
+				if (atlasCanvasBG!=null)
+					EditorGUI.DrawPreviewTexture(new Rect(0,0,width,height),atlasCanvasBG);	
 				
-				foreach(TextureOnCanvas toc in  texturesOnCanvas){
-					
-					toc.draw();
-					
-				}	
-				
+				if(texturesOnCanvas!=null){
+					foreach(TextureOnCanvas toc in  texturesOnCanvas){
+						
+						toc.draw();
+						
+					}	
+				}
 		
 			EditorGUILayout.EndScrollView();
 		
@@ -233,13 +240,43 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	
 	
+	Texture2D createOnePxBorderTexture(){
+		string assetPath="Assets/Editor/Texture/onePxBorder.asset";
+		
+		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Mesh));
+		if (texture==null){
+			texture=new Texture2D(3,3);
+			Color[] c=new Color[9];
+			for (int i=0;i<9;i++){
+				c[i]=new Color(0,0,0,1);	
+			}
+			c[4]=new Color(0,0,0,0); //center alpha is empty
+			texture.SetPixels(c);
+			texture.Apply();
+			AssetDatabase.CreateAsset(texture,assetPath);
+			AssetDatabase.SaveAssets();
+		}
+		return texture;
+	}
+	
 	
 	
 	
 	//here we just generate Texture2d
-	 Texture2D createAtlasCanvasBGTexture(int width, int height){
+	 static Texture2D createAtlasCanvasBGTexture(int width, int height){
+		string assetPath="Assets/Assets/Editor/Texture/AtlasCanvasBG.asset";
 		
-		Texture2D texture=new Texture2D(width,height);
+		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Mesh));
+		if (texture==null){
+			texture=new Texture2D(width,height);	
+			AssetDatabase.CreateAsset(texture,assetPath);
+			AssetDatabase.SaveAssets();
+		}
+		
+		
+		texture=new Texture2D(width,height);
+		
+			
 		Color[] pixels=new Color[width*height];
 		Color rowFirstColor=bgColor1;
 		
@@ -262,7 +299,9 @@ public class FreeAtlasEditor : EditorWindow {
 		}
 		texture.SetPixels(pixels);	
 		texture.Apply();
-		TextureUtil.saveTextureToFile(texture,"testTextrettt");
+		//TextureUtil.saveTextureToFile(texture,"testTextrettt");
+		
+		
 		return texture;
 	}
 	
