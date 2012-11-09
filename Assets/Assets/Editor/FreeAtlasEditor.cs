@@ -9,7 +9,7 @@ using System.Collections.Generic;
  */
 
 
-public enum ATLAS_SIZE{
+public enum AtlasSize{
 		_128=128,
 		_256=256,
 		_512=512,
@@ -18,12 +18,29 @@ public enum ATLAS_SIZE{
 		_4112=4112		
 	}
 
+public enum TextureState{
+		passive,
+		onDrag,
+		showBorder,
+		invalidPosition
+		
+}
+
 
 public class TextureOnCanvas{	
 	public Rect canvasRect;
 	public Texture2D texture;
 	private bool isDragging=false;
 	private Vector2 mouseStartPosition;
+	public TextureState textureState=TextureState.passive;
+	
+	
+	public static Dictionary<TextureState,Color> borderColorDict=new Dictionary<TextureState, Color>(){
+		{TextureState.passive, GUI.color},
+		{TextureState.onDrag, Color.red},
+		{TextureState.showBorder, Color.yellow},
+		{TextureState.invalidPosition, Color.red},
+	};
 	
 	
 	public TextureOnCanvas (Rect canvasRect, Texture2D texture)
@@ -33,17 +50,19 @@ public class TextureOnCanvas{
 	}
 	
 	public void draw(){
-		
+			
+		GUI.color=borderColorDict[textureState];
 		
 		if (Event.current.type == EventType.MouseUp){
 			isDragging = false;
+			textureState=TextureState.passive;
 			if (FreeAtlasEditor.stopDragging!=null)
 				FreeAtlasEditor.stopDragging();
 		} else if (Event.current.type == EventType.MouseDown && canvasRect.Contains (Event.current.mousePosition)){
 			isDragging = true;						
+			textureState=TextureState.onDrag;
 			mouseStartPosition=Event.current.mousePosition;							
-			Event.current.Use();	
-			
+			Event.current.Use();				
 		}
 		
 		if (isDragging){ 
@@ -80,6 +99,7 @@ public class TextureOnCanvas{
 		
 		EditorGUI.DrawPreviewTexture(canvasRect,texture);	
 		
+		GUI.color=borderColorDict[TextureState.passive];
 	}
 
 }
@@ -90,10 +110,10 @@ public delegate void StopDragging();
 
 public class FreeAtlasEditor : EditorWindow {
 	[SerializeField]
-	public static ATLAS_SIZE atlasWidth=ATLAS_SIZE._512;
+	public static AtlasSize atlasWidth=AtlasSize._512;
 	
 	[SerializeField]
-	public static ATLAS_SIZE atlasHeight=ATLAS_SIZE._512;
+	public static AtlasSize atlasHeight=AtlasSize._512;
 	
 	[SerializeField]
 	Texture2D atlasCanvasBG;
@@ -143,8 +163,8 @@ public class FreeAtlasEditor : EditorWindow {
 		
 		EditorGUILayout.BeginVertical();
 			EditorGUILayout.BeginHorizontal (GUILayout.MinHeight(100f));
-				ATLAS_SIZE newWidth =(ATLAS_SIZE) EditorGUILayout.EnumPopup("atlas width",atlasWidth);
-				ATLAS_SIZE newHeight =(ATLAS_SIZE) EditorGUILayout.EnumPopup("atlas height",atlasHeight);	
+				AtlasSize newWidth =(AtlasSize) EditorGUILayout.EnumPopup("atlas width",atlasWidth);
+				AtlasSize newHeight =(AtlasSize) EditorGUILayout.EnumPopup("atlas height",atlasHeight);	
 				
 				if (newWidth!=atlasWidth || newHeight!=atlasHeight){
 					atlasWidth=newWidth;
@@ -163,14 +183,27 @@ public class FreeAtlasEditor : EditorWindow {
 				
 				EditorGUI.DrawPreviewTexture(new Rect(0,0,width,height),atlasCanvasBG);	
 				
-				foreach(TextureOnCanvas toc in  texturesOnCanvas){
-					
-					toc.draw();
-					
-				}	
-				
 		
+				//draw textures
+				foreach(TextureOnCanvas toc in  texturesOnCanvas){
+					toc.draw();					
+				}	
+						
+		
+		/*
+				//draw textures borders (in front of all textures, to prevent overlap)
+				// draw "wrong texture" border everytime if exists, 
+				// otherwise only if mouse in focus on atlas
+				bool mouseInAtlasCanvas=canvasRect.Contains (Event.current.mousePosition);
+				foreach(TextureOnCanvas toc in  texturesOnCanvas){
+					if (toc.textureState == TextureState.invalidPosition || mouseInAtlasCanvas){
+						EditorGUI.RectField
+					}
+				}
+		*/
 			EditorGUILayout.EndScrollView();
+		
+			
 		
 		EditorGUILayout.EndVertical();
 		
