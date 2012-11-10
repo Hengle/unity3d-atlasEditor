@@ -4,6 +4,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
 
+
 /*
  * Thanks AngryAnt for a greate drag'n'drop example at this page http://angryant.com/2009/09/18/gui-drag-drop/
  * 
@@ -38,7 +39,7 @@ public class UFTAtlasEditorConfig{
 		get {
 			if (_borderStyle == null){
 				_borderStyle=new GUIStyle();
-				_borderStyle.normal.background=FreeAtlasEditor.borderTexture;
+				_borderStyle.normal.background=FreeAtlasEditor.createOnePxBorderTexture();
 				_borderStyle.border=new RectOffset(1,1,1,1);
 				_borderStyle.alignment=TextAnchor.MiddleCenter;
 			}			
@@ -67,8 +68,7 @@ public class UFTAtlasEditorConfig{
 	public static Dictionary<TextureState,Color> borderColorDict=new Dictionary<TextureState, Color>(){
 		{TextureState.passive, GUI.color},
 		{TextureState.onDrag, Color.green},
-		{TextureState.showBorder, Color.yellow},
-		{TextureState.invalidPosition, Color.red},
+		{TextureState.showBorder, Color.yellow}		
 	};
 }
 
@@ -88,20 +88,26 @@ public class TextureOnCanvas{
 	private Vector2 mouseStartPosition;
 	public TextureState textureState=TextureState.passive;
 	
+	public long blinkTimeout=5000000; //interval in ticks There are 10,000 ticks in a millisecond
+	public Color blinkColor1=Color.red;
+	public Color blinkColor2=Color.yellow;
+	private Color currentBlinkColor;
+	private long? controlBlinkTime=null;
+	public bool isSizeInvalid=false;
 	
 	
 	public TextureOnCanvas (Rect canvasRect, Texture2D texture)
 	{
 		this.canvasRect = canvasRect;
 		this.texture = texture;
+		FreeAtlasEditor.onAtlasSizeChanged+=onAtlasSizeChanged;
 	}
 	
 	public void draw(){
 		
 		if (Event.current.type == EventType.MouseUp){
 			textureState=TextureState.passive;
-			isDragging = false;
-			textureState=TextureState.passive;
+			isDragging = false;			
 			if (FreeAtlasEditor.stopDragging!=null)
 				FreeAtlasEditor.stopDragging();
 		} else if (Event.current.type == EventType.MouseDown && canvasRect.Contains (Event.current.mousePosition)){
@@ -150,20 +156,49 @@ public class TextureOnCanvas{
 			
 		}
 		
+		if (isSizeInvalid){
+			long currentTime=System.DateTime.Now.Ticks;
+			
+			if (controlBlinkTime==null){
+				controlBlinkTime=currentTime+blinkTimeout;
+				currentBlinkColor=blinkColor1;
+			}
+			
+			if (controlBlinkTime <= currentTime){
+				
+				controlBlinkTime=currentTime+blinkTimeout;
+				currentBlinkColor=(currentBlinkColor==blinkColor1)?blinkColor2:blinkColor1;
+			}
+			GUI.color=currentBlinkColor;
+			
+		}
+		
+		
 		EditorGUI.DrawPreviewTexture(canvasRect,texture);			
 		
 
 
-		if (isDragging)
+		if (isDragging || isSizeInvalid)
 			GUI.color=color;
 
 	}
-
+	
+	
+	private void onAtlasSizeChanged(int width, int height){
+		if (texture.width>width || texture.height>height){
+			isSizeInvalid=true;	
+		}else{
+			isSizeInvalid=false;
+		}
+		controlBlinkTime=null;
+	}
+	
 }
 
 
 public delegate void DragInProgress();
 public delegate void StopDragging();
+public delegate void AtlasSizeChanged(int width, int height);
 
 public class FreeAtlasEditor : EditorWindow {
 	[SerializeField]
@@ -189,7 +224,7 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	public static DragInProgress dragInProgress;
 	public static StopDragging stopDragging;
-	
+	public static AtlasSizeChanged onAtlasSizeChanged;
 
 
 	
@@ -267,11 +302,10 @@ public class FreeAtlasEditor : EditorWindow {
 					
 				}	
 		
-			
-			
 				// draw ellow border if mouse under the canvasw
 				
 				if (canvasRect.Contains (Event.current.mousePosition)){
+					
 					Color color=GUI.color;
 					GUI.color=UFTAtlasEditorConfig.borderColorDict[TextureState.showBorder];
 						
@@ -283,17 +317,6 @@ public class FreeAtlasEditor : EditorWindow {
 			
 			}
 		
-		/*
-				//draw textures borders (in front of all textures, to prevent overlap)
-				// draw "wrong texture" border everytime if exists, 
-				// otherwise only if mouse in focus on atlas
-				bool mouseInAtlasCanvas=canvasRect.Contains (Event.current.mousePosition);
-				foreach(TextureOnCanvas toc in  texturesOnCanvas){
-					if (toc.textureState == TextureState.invalidPosition || mouseInAtlasCanvas){
-						EditorGUI.RectField
-					}
-				}
-		*/
 			EditorGUILayout.EndScrollView();
 		
 			
@@ -315,6 +338,8 @@ public class FreeAtlasEditor : EditorWindow {
 	void recreateAtlasBG ()
 	{	
 		atlasBGTexCoord=new Rect(0,0,(int)atlasWidth/atlasTileCubeFactor,(int)atlasHeight/atlasTileCubeFactor);		
+		if (onAtlasSizeChanged!=null)
+			onAtlasSizeChanged((int)atlasWidth,(int)atlasHeight);
 	}
 
 	void HandleDroppedObjects (Object[] objectReferences)
@@ -359,7 +384,7 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	
 	
-	static Texture2D createOnePxBorderTexture(){
+	public static Texture2D createOnePxBorderTexture(){
 		string assetPath="Assets/Assets/Editor/Texture/onePxBorder.png";
 		
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Mesh));
