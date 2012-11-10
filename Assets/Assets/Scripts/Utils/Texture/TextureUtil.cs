@@ -24,8 +24,9 @@ public class TextureUtil : MonoBehaviour {
 	
 	
 	public static void saveTextureToFile(Texture2D texture, string fileName){
-		byte[] byteArray=texture.EncodeToPNG();		
+			
 		string directoryPath=Application.dataPath +"/data";
+		byte[] byteArray=texture.EncodeToPNG();	
 		if (!Directory.Exists(directoryPath))
 			Directory.CreateDirectory(directoryPath);
 		
