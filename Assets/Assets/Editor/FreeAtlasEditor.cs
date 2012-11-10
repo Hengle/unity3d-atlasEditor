@@ -49,6 +49,19 @@ public class UFTAtlasEditorConfig{
 	}
 	
 	
+	private static Texture2D _atlasCanvasBGTile;
+
+	public static Texture2D atlasCanvasBGTile {
+		get {
+			if (_atlasCanvasBGTile==null)
+				_atlasCanvasBGTile=FreeAtlasEditor.getAtlasCanvasBGTile();
+			return _atlasCanvasBGTile;
+		}
+		set {
+			_atlasCanvasBGTile = value;
+		}
+	}	
+	
 	
 	public static Dictionary<TextureState,Color> borderColorDict=new Dictionary<TextureState, Color>(){
 		{TextureState.passive, GUI.color},
@@ -158,8 +171,10 @@ public class FreeAtlasEditor : EditorWindow {
 	public static Texture2D borderTexture;
 	static Color bgColor1=Color.white;
 	static Color bgColor2=new Color(0.8f,0.8f,0.8f,1f);
-	static int bgCubeSize=8;
 	
+	
+	private static int atlasTileCubeFactor=16; // it equals of the cube size on bg
+	private Rect atlasBGTexCoord=new Rect(0,0,1,1);
 	
 	private List<TextureOnCanvas> texturesOnCanvas;
 	
@@ -179,7 +194,7 @@ public class FreeAtlasEditor : EditorWindow {
 	}
 	
 	static void Init(){
-		createAtlasCanvasBGTexture((int)atlasWidth,(int)atlasHeight);
+//		createAtlasCanvasBGTexture((int)atlasWidth,(int)atlasHeight);
 		borderTexture=createOnePxBorderTexture();
 	}
 	
@@ -230,9 +245,11 @@ public class FreeAtlasEditor : EditorWindow {
 			GUILayoutUtility.GetRect(width,height);
 			
 			Rect canvasRect = new Rect (0, 0, width, height);
-			if (atlasCanvasBG!=null)
-				EditorGUI.DrawPreviewTexture(canvasRect,atlasCanvasBG);	
-			
+			//if (atlasCanvasBG!=null)
+			//	EditorGUI.DrawPreviewTexture(canvasRect,atlasCanvasBG);	
+			GUI.DrawTextureWithTexCoords(canvasRect,UFTAtlasEditorConfig.atlasCanvasBGTile,atlasBGTexCoord,false);
+		
+		
 			if(texturesOnCanvas!=null){
 				foreach(TextureOnCanvas toc in  texturesOnCanvas){					
 					toc.draw();
@@ -272,8 +289,8 @@ public class FreeAtlasEditor : EditorWindow {
 	}
 
 	void recreateAtlasBG ()
-	{		
-		atlasCanvasBG=createAtlasCanvasBGTexture((int)atlasWidth,(int)atlasHeight);		
+	{	
+		atlasBGTexCoord=new Rect(0,0,(int)atlasWidth/atlasTileCubeFactor,(int)atlasHeight/atlasTileCubeFactor);		
 	}
 
 	void HandleDroppedObjects (Object[] objectReferences)
@@ -361,35 +378,53 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	
 	
-	
-	//here we just generate Texture2d
-	 static Texture2D createAtlasCanvasBGTexture(int width, int height){
-		string assetPath="Assets/Assets/Editor/Texture/AtlasCanvasBG.asset";
+	public static Texture2D getAtlasCanvasBGTile(){
+		int squareWidth=1;
+		int textureWidth=2;
 		
+		string assetPath="Assets/Assets/Editor/Texture/AtlasCanvasBGTile.png";
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Mesh));
 		if (texture==null){
-			texture=new Texture2D(width,height,TextureFormat.ARGB32,false);	
-			AssetDatabase.CreateAsset(texture,assetPath);
-			AssetDatabase.SaveAssets();
+			texture=createAtlasCanvasBGTexture(textureWidth,textureWidth,squareWidth);
+			byte[] bytes = texture.EncodeToPNG();
+		    if (bytes != null)
+		      File.WriteAllBytes(assetPath, bytes);
+			 AssetDatabase.ImportAsset(assetPath);
+		    TextureImporter textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+		     textureImporter.textureFormat=TextureImporterFormat.ARGB32;//   set_textureFormat((TextureImporterFormat) -3);
+		    textureImporter.textureType=TextureImporterType.Advanced;// set_textureType((TextureImporterType) 2);
+			textureImporter.mipmapEnabled=false;
+			textureImporter.wrapMode=TextureWrapMode.Repeat;
+			textureImporter.filterMode=FilterMode.Point;
+			textureImporter.npotScale=TextureImporterNPOTScale.None;
+		    AssetDatabase.ImportAsset(assetPath);
+		    texture= (Texture2D) AssetDatabase.LoadAssetAtPath(assetPath, typeof (Texture2D));
 		}
+		return texture;
+	}
+	
+	
+	
+	//here we just generate Texture2d
+	 static Texture2D createAtlasCanvasBGTexture(int width, int height, int squareWidth){
+	
 		
-		
-		texture=new Texture2D(width,height);
+		Texture2D texture=new Texture2D(width,height);
 		
 			
 		Color[] pixels=new Color[width*height];
 		Color rowFirstColor=bgColor1;
 		
 		Color currentColor=bgColor1;
-		for (int textHeight = 0; textHeight < height; textHeight+=bgCubeSize) {
+		for (int textHeight = 0; textHeight < height; textHeight+=squareWidth) {
 			rowFirstColor=(rowFirstColor==bgColor1)?bgColor2:bgColor1;
 			currentColor=rowFirstColor;
-			for (int textWidth = 0; textWidth < width; textWidth+=bgCubeSize) {			
+			for (int textWidth = 0; textWidth < width; textWidth+=squareWidth) {			
 				int initPosition=textWidth+(textHeight*width);
 				
-				// paint pixels on this and nex bgCubeSize row
-				for (int cubeWidth = 0; cubeWidth < bgCubeSize; cubeWidth++) {
-					for (int cubeHeight = 0; cubeHeight < bgCubeSize; cubeHeight++) {
+				// paint pixels on this and nex squareWidth row
+				for (int cubeWidth = 0; cubeWidth < squareWidth; cubeWidth++) {
+					for (int cubeHeight = 0; cubeHeight < squareWidth; cubeHeight++) {
 						//pixels[initPosition+k]=currentColor;	
 						pixels[initPosition+cubeWidth+(width*cubeHeight)]=currentColor;	
 					}					
