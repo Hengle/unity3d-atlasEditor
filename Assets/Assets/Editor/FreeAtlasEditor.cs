@@ -11,6 +11,24 @@ using System.IO;
 
 
 
+
+public enum ATLAS_SIZE{
+		_128=128,
+		_256=256,
+		_512=512,
+		_1024=1024,
+		_2056=2056,
+		_4112=4112		
+	}
+
+public enum TextureState{
+		passive,
+		onDrag,
+		showBorder,
+		invalidPosition
+		
+}
+
 public class UFTAtlasEditorConfig{
 		
 	private static GUIStyle _borderStyle;  
@@ -29,19 +47,23 @@ public class UFTAtlasEditorConfig{
 			_borderStyle = value;
 		}
 	}
+	
+	
+	
+	public static Dictionary<TextureState,Color> borderColorDict=new Dictionary<TextureState, Color>(){
+		{TextureState.passive, GUI.color},
+		{TextureState.onDrag, Color.green},
+		{TextureState.showBorder, Color.yellow},
+		{TextureState.invalidPosition, Color.red},
+	};
 }
 
 
 
 
-public enum ATLAS_SIZE{
-		_128=128,
-		_256=256,
-		_512=512,
-		_1024=1024,
-		_2056=2056,
-		_4112=4112		
-	}
+
+
+
 
 
 public class TextureOnCanvas{	
@@ -49,7 +71,7 @@ public class TextureOnCanvas{
 	public Texture2D texture;
 	private bool isDragging=false;
 	private Vector2 mouseStartPosition;
-	
+	public TextureState textureState=TextureState.passive;
 	
 	public TextureOnCanvas (Rect canvasRect, Texture2D texture)
 	{
@@ -61,16 +83,18 @@ public class TextureOnCanvas{
 		
 		
 		if (Event.current.type == EventType.MouseUp){
+			textureState=TextureState.passive;
 			isDragging = false;
 			if (FreeAtlasEditor.stopDragging!=null)
 				FreeAtlasEditor.stopDragging();
 		} else if (Event.current.type == EventType.MouseDown && canvasRect.Contains (Event.current.mousePosition)){
+			textureState=TextureState.onDrag;
 			isDragging = true;						
 			mouseStartPosition=Event.current.mousePosition;							
 			Event.current.Use();	
 			
 		}
-		
+		Color color=GUI.color;
 		if (isDragging){ 
 			
 			Vector2 currentOffset=Event.current.mousePosition-mouseStartPosition;
@@ -101,14 +125,18 @@ public class TextureOnCanvas{
 			}
 			if (FreeAtlasEditor.dragInProgress!=null)
 				FreeAtlasEditor.dragInProgress();
+			
+			//if dragging lets color it to drag color border
+			
+			GUI.color=UFTAtlasEditorConfig.borderColorDict[TextureState.onDrag];
+			
+			
 		}
 		
-		EditorGUI.DrawPreviewTexture(canvasRect,texture);	
+		EditorGUI.DrawPreviewTexture(canvasRect,texture);			
 		
-		
-		
-		GUI.Box(canvasRect,GUIContent.none,UFTAtlasEditorConfig.borderStyle);
-		
+		if (isDragging)
+			GUI.color=color;
 	}
 
 }
@@ -199,29 +227,33 @@ public class FreeAtlasEditor : EditorWindow {
 			scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 				
 				
-				GUILayoutUtility.GetRect(width,height);
+			GUILayoutUtility.GetRect(width,height);
+			
+			Rect canvasRect = new Rect (0, 0, width, height);
+			if (atlasCanvasBG!=null)
+				EditorGUI.DrawPreviewTexture(canvasRect,atlasCanvasBG);	
+			
+			if(texturesOnCanvas!=null){
+				foreach(TextureOnCanvas toc in  texturesOnCanvas){					
+					toc.draw();
+					
+				}	
+		
+			
+			
+				// draw ellow border if mouse under the canvasw
 				
-				if (atlasCanvasBG!=null)
-					EditorGUI.DrawPreviewTexture(new Rect(0,0,width,height),atlasCanvasBG);	
-				
-				if(texturesOnCanvas!=null){
-					foreach(TextureOnCanvas toc in  texturesOnCanvas){
+				if (canvasRect.Contains (Event.current.mousePosition)){
+					Color color=GUI.color;
+					GUI.color=UFTAtlasEditorConfig.borderColorDict[TextureState.showBorder];
 						
-						toc.draw();
-						
+					foreach(TextureOnCanvas toc in  texturesOnCanvas){						
+						GUI.Box(toc.canvasRect,GUIContent.none,UFTAtlasEditorConfig.borderStyle);
 					}	
-			
-				/*	
-				foreach(TextureOnCanvas toc in  texturesOnCanvas){
-						Color color=GUI.color;
-						GUI.color=Color.yellow;
-						Graphics.DrawTexture(toc.canvasRect, borderTexture,5,5,5,5);
-						GUI.color=color;
-					}	
-				*/
-			
-			
+					GUI.color=color;
 				}
+			
+			}
 		
 			EditorGUILayout.EndScrollView();
 		
