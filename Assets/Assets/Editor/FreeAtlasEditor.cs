@@ -2,11 +2,36 @@ using UnityEngine;
 using System.Collections;
 using UnityEditor;
 using System.Collections.Generic;
+using System.IO;
 
 /*
  * Thanks AngryAnt for a greate drag'n'drop example at this page http://angryant.com/2009/09/18/gui-drag-drop/
  * 
  */
+
+
+
+public class UFTAtlasEditorConfig{
+		
+	private static GUIStyle _borderStyle;  
+	
+	public static GUIStyle borderStyle {
+		get {
+			if (_borderStyle == null){
+				_borderStyle=new GUIStyle();
+				_borderStyle.normal.background=FreeAtlasEditor.borderTexture;
+				_borderStyle.border=new RectOffset(1,1,1,1);
+				_borderStyle.alignment=TextAnchor.MiddleCenter;
+			}			
+			return _borderStyle;
+		}
+		set {
+			_borderStyle = value;
+		}
+	}
+}
+
+
 
 
 public enum ATLAS_SIZE{
@@ -80,6 +105,10 @@ public class TextureOnCanvas{
 		
 		EditorGUI.DrawPreviewTexture(canvasRect,texture);	
 		
+		
+		
+		GUI.Box(canvasRect,GUIContent.none,UFTAtlasEditorConfig.borderStyle);
+		
 	}
 
 }
@@ -98,7 +127,7 @@ public class FreeAtlasEditor : EditorWindow {
 	[SerializeField]
 	Texture2D atlasCanvasBG;
 	
-	static Texture2D borderTexture;
+	public static Texture2D borderTexture;
 	static Color bgColor1=Color.white;
 	static Color bgColor2=new Color(0.8f,0.8f,0.8f,1f);
 	static int bgCubeSize=8;
@@ -112,7 +141,8 @@ public class FreeAtlasEditor : EditorWindow {
 	public static StopDragging stopDragging;
 	
 	[MenuItem ("Window/Free Atlas Maker")]
-    static void ShowWindow () {        
+    static void ShowWindow () {    
+		Init();
 		EditorWindow.GetWindow <FreeAtlasEditor>();				
     }
 	
@@ -181,13 +211,14 @@ public class FreeAtlasEditor : EditorWindow {
 						
 					}	
 			
-					foreach(TextureOnCanvas toc in  texturesOnCanvas){
+				/*	
+				foreach(TextureOnCanvas toc in  texturesOnCanvas){
 						Color color=GUI.color;
 						GUI.color=Color.yellow;
 						Graphics.DrawTexture(toc.canvasRect, borderTexture,5,5,5,5);
 						GUI.color=color;
 					}	
-			
+				*/
 			
 			
 				}
@@ -256,7 +287,7 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	
 	static Texture2D createOnePxBorderTexture(){
-		string assetPath="Assets/Assets/Editor/Texture/onePxBorder.asset";
+		string assetPath="Assets/Assets/Editor/Texture/onePxBorder.png";
 		
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Mesh));
 		if (texture==null){
@@ -268,8 +299,30 @@ public class FreeAtlasEditor : EditorWindow {
 			c[4]=new Color(1,1,1,0); //center alpha is empty
 			texture.SetPixels(c);
 			texture.Apply();
-			AssetDatabase.CreateAsset(texture,assetPath);
-			AssetDatabase.SaveAssets();
+			
+			
+			
+			
+			//save to files an then import
+			 byte[] bytes = texture.EncodeToPNG();
+		    if (bytes != null)
+		      File.WriteAllBytes(assetPath, bytes);
+		    Object.DestroyImmediate((Object) texture);
+		    AssetDatabase.ImportAsset(assetPath);
+		    TextureImporter textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+		    textureImporter.textureFormat=TextureImporterFormat.ARGB32;//   set_textureFormat((TextureImporterFormat) -3);
+		    textureImporter.textureType=TextureImporterType.Advanced;// set_textureType((TextureImporterType) 2);
+			textureImporter.mipmapEnabled=false;
+			textureImporter.wrapMode=TextureWrapMode.Clamp;
+			textureImporter.filterMode=FilterMode.Point;
+			textureImporter.npotScale=TextureImporterNPOTScale.None;
+		    AssetDatabase.ImportAsset(assetPath);
+		    texture= (Texture2D) AssetDatabase.LoadAssetAtPath(assetPath, typeof (Texture2D));			
+			
+			
+			
+			
+			
 		}
 		return texture;
 	}
@@ -283,7 +336,7 @@ public class FreeAtlasEditor : EditorWindow {
 		
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Mesh));
 		if (texture==null){
-			texture=new Texture2D(width,height);	
+			texture=new Texture2D(width,height,TextureFormat.ARGB32,false);	
 			AssetDatabase.CreateAsset(texture,assetPath);
 			AssetDatabase.SaveAssets();
 		}
