@@ -108,13 +108,15 @@ public class TextureOnCanvas{
 		if (Event.current.type == EventType.MouseUp){
 			textureState=TextureState.passive;
 			isDragging = false;			
-			if (FreeAtlasEditor.stopDragging!=null)
-				FreeAtlasEditor.stopDragging();
+			if (FreeAtlasEditor.onStopDragging!=null)
+				FreeAtlasEditor.onStopDragging();
 		} else if (Event.current.type == EventType.MouseDown && canvasRect.Contains (Event.current.mousePosition)){
 			textureState=TextureState.onDrag;
 			isDragging = true;						
 			textureState=TextureState.onDrag;
-			mouseStartPosition=Event.current.mousePosition;							
+			mouseStartPosition=Event.current.mousePosition;	
+			if (FreeAtlasEditor.onTextureOnCanvasClick!=null)
+				FreeAtlasEditor.onTextureOnCanvasClick(this);
 			Event.current.Use();				
 		}
 		Color color=GUI.color;
@@ -146,8 +148,8 @@ public class TextureOnCanvas{
 				mouseStartPosition=Event.current.mousePosition;
 				
 			}
-			if (FreeAtlasEditor.dragInProgress!=null)
-				FreeAtlasEditor.dragInProgress();
+			if (FreeAtlasEditor.onDragInProgress!=null)
+				FreeAtlasEditor.onDragInProgress();
 			
 			//if dragging lets color it to drag color border
 			
@@ -199,6 +201,8 @@ public class TextureOnCanvas{
 public delegate void DragInProgress();
 public delegate void StopDragging();
 public delegate void AtlasSizeChanged(int width, int height);
+public delegate void TextureOnCanvasClick(TextureOnCanvas textureOnCanvas);
+
 
 public class FreeAtlasEditor : EditorWindow {
 	[SerializeField]
@@ -222,11 +226,13 @@ public class FreeAtlasEditor : EditorWindow {
 	
 	public Vector2 scrollPosition = Vector2.zero;
 	
-	public static DragInProgress dragInProgress;
-	public static StopDragging stopDragging;
+	public static DragInProgress onDragInProgress;
+	public static StopDragging onStopDragging;
 	public static AtlasSizeChanged onAtlasSizeChanged;
+	public static TextureOnCanvasClick onTextureOnCanvasClick;
 
-
+	private TextureOnCanvas clickedTextureOnCanvas;
+	private bool recreateTexturesPositions=false;
 	
 	
 	[MenuItem ("Window/Free Atlas Maker")]
@@ -250,25 +256,45 @@ public class FreeAtlasEditor : EditorWindow {
 		
 		recreateAtlasBG ();
 		texturesOnCanvas=new List<TextureOnCanvas>();
-		dragInProgress+=onDragInProgress;
-		stopDragging+=onStopDragging;
 		
+		//init listeners
+		onDragInProgress+=onDragInProgressListener;
+		onStopDragging+=onStopDraggingListener;
+		onTextureOnCanvasClick+=onTextureOnCanvasClickListener;
 	}
 	
 	
-	private void onDragInProgress(){
+	private void onDragInProgressListener(){
 		Repaint();	
 	}
 	
-	private void onStopDragging(){
+	private void onStopDraggingListener(){
 		Repaint();	
 	}
+
+	// we cant move this element to the last position in the list, because in paralel iterator can use list
+	// because of that we will just store this value, and in nex frame in OnGUI function
+	// we will move this object to the last position
+	private void onTextureOnCanvasClickListener (TextureOnCanvas textureOnCanvas)
+	{		
+		clickedTextureOnCanvas=textureOnCanvas;		
+		recreateTexturesPositions=true;
+	}
+	
 	void Update(){
 		Repaint();	
 	}
 	
 	
 	void OnGUI () {
+		
+		//check if in previous frame we clicked on texture, if we did, move this texture to the last index in collection
+		if (recreateTexturesPositions){
+			texturesOnCanvas.Remove(clickedTextureOnCanvas);
+			texturesOnCanvas.Add(clickedTextureOnCanvas);
+			recreateTexturesPositions=false;	
+		}
+		
 		
 		EditorGUILayout.BeginVertical();
 			EditorGUILayout.BeginHorizontal (GUILayout.MinHeight(100f));
@@ -408,8 +434,8 @@ public class FreeAtlasEditor : EditorWindow {
 		    Object.DestroyImmediate((Object) texture);
 		    AssetDatabase.ImportAsset(assetPath);
 		    TextureImporter textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-		    textureImporter.textureFormat=TextureImporterFormat.ARGB32;//   set_textureFormat((TextureImporterFormat) -3);
-		    textureImporter.textureType=TextureImporterType.Advanced;// set_textureType((TextureImporterType) 2);
+		    textureImporter.textureFormat=TextureImporterFormat.ARGB32;
+		    textureImporter.textureType=TextureImporterType.Advanced;
 			textureImporter.mipmapEnabled=false;
 			textureImporter.wrapMode=TextureWrapMode.Clamp;
 			textureImporter.filterMode=FilterMode.Point;
@@ -440,8 +466,8 @@ public class FreeAtlasEditor : EditorWindow {
 		      File.WriteAllBytes(assetPath, bytes);
 			 AssetDatabase.ImportAsset(assetPath);
 		    TextureImporter textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-		     textureImporter.textureFormat=TextureImporterFormat.ARGB32;//   set_textureFormat((TextureImporterFormat) -3);
-		    textureImporter.textureType=TextureImporterType.Advanced;// set_textureType((TextureImporterType) 2);
+		     textureImporter.textureFormat=TextureImporterFormat.ARGB32;
+		    textureImporter.textureType=TextureImporterType.Advanced;
 			textureImporter.mipmapEnabled=false;
 			textureImporter.wrapMode=TextureWrapMode.Repeat;
 			textureImporter.filterMode=FilterMode.Point;
