@@ -296,6 +296,13 @@ public class FreeAtlasEditor : EditorWindow {
 		}
 		
 		
+		// check fi user pressed button delete, in this case we will remove last element in the list
+		
+		if ((Event.current.type==EventType.keyDown) && (Event.current.keyCode == KeyCode.Delete) && (texturesOnCanvas!=null) && (texturesOnCanvas.Count >0)){			
+			texturesOnCanvas.RemoveAt(texturesOnCanvas.Count-1);
+		}
+		
+		
 		EditorGUILayout.BeginVertical();
 			EditorGUILayout.BeginHorizontal (GUILayout.MinHeight(100f));
 				AtlasSize newWidth =(AtlasSize) EditorGUILayout.EnumPopup("atlas width",atlasWidth);
@@ -317,8 +324,6 @@ public class FreeAtlasEditor : EditorWindow {
 			GUILayoutUtility.GetRect(width,height);
 			
 			Rect canvasRect = new Rect (0, 0, width, height);
-			//if (atlasCanvasBG!=null)
-			//	EditorGUI.DrawPreviewTexture(canvasRect,atlasCanvasBG);	
 			GUI.DrawTextureWithTexCoords(canvasRect,UFTAtlasEditorConfig.atlasCanvasBGTile,atlasBGTexCoord,false);
 		
 		
