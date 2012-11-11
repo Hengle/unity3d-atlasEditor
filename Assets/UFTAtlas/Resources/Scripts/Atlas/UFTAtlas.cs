@@ -1,7 +1,10 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
+
+[Serializable]
 public class UFTAtlas : ScriptableObject {
 
 	[SerializeField]
@@ -9,7 +12,10 @@ public class UFTAtlas : ScriptableObject {
 	
 	[SerializeField]
 	public UFTAtlasSize atlasHeight=UFTAtlasSize._512;
-			
+	
+	[SerializeField]
+	public List<UFTAtlasEntry> texturesOnCanvas;	
+
 	Texture2D atlasCanvasBG;
 	
 	public static Texture2D borderTexture;
@@ -17,8 +23,7 @@ public class UFTAtlas : ScriptableObject {
 	private static int atlasTileCubeFactor=16; // it equals of the cube size on bg
 	private Rect atlasBGTexCoord=new Rect(0,0,1,1);
 	
-	public List<UFTAtlasEntry> texturesOnCanvas;	
-
+	
 	
 
 
@@ -31,9 +36,7 @@ public class UFTAtlas : ScriptableObject {
 	}
 	//uncoment it if you will have a problem with repaint
 	/*
-	void Update(){
-		Repaint();	
-	}
+	
 	*/
 	
 	
@@ -89,16 +92,24 @@ public class UFTAtlas : ScriptableObject {
 	
 	public void addNewEntry(Texture2D texture){		
 		Rect rect=new Rect(0,0,texture.width,texture.height);
-		texturesOnCanvas.Add(new UFTAtlasEntry(rect, texture,this));
+		UFTAtlasEntry uftAtlasEntry=UFTAtlasEntry.CreateInstance<UFTAtlasEntry>();
+		uftAtlasEntry.canvasRect=rect;
+		uftAtlasEntry.texture=texture;
+		uftAtlasEntry.uftAtlas=this;
+		texturesOnCanvas.Add( uftAtlasEntry);
 	}
 	
 	
 	
 	void initParams ()
 	{	
+		
+		
 		borderTexture=UFTTextureUtil.createOnePxBorderTexture();
 		
-		texturesOnCanvas=new List<UFTAtlasEntry>();
+		
+		if(texturesOnCanvas==null)
+			texturesOnCanvas=new List<UFTAtlasEntry>();
 		
 		//init listeners
 		UFTAtlasEditorEventManager.onDragInProgress+=onDragInProgressListener;

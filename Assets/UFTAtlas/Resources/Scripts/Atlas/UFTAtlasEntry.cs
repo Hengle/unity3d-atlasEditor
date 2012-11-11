@@ -1,13 +1,19 @@
 using UnityEngine;
 using System.Collections;
 using UnityEditor;
+using System;
 
 
-public class UFTAtlasEntry{	
+[Serializable]
+public class UFTAtlasEntry:ScriptableObject{	
 	
-	public UFTAtlas uftAtlas;
-	public Rect canvasRect;
+	[SerializeField]
 	public Texture2D texture;
+	
+	[SerializeField]
+	public Rect canvasRect;
+	
+	public UFTAtlas uftAtlas;		
 	private bool isDragging=false;
 	private Vector2 mouseStartPosition;
 	public UFTTextureState textureState=UFTTextureState.passive;
@@ -19,9 +25,7 @@ public class UFTAtlasEntry{
 	private long? controlBlinkTime=null;
 	public bool isSizeInvalid=false;
 	
-	
-	
-	
+
 	
 	public UFTAtlasEntry (Rect canvasRect, Texture2D texture, UFTAtlas uftAtlas)
 	{
@@ -31,8 +35,7 @@ public class UFTAtlasEntry{
 		this.uftAtlas=uftAtlas;
 	}
 	
-	public void draw(){
-		
+	public void draw(){		
 		if (Event.current.type == EventType.MouseUp){
 			textureState=UFTTextureState.passive;
 			isDragging = false;			

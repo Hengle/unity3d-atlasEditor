@@ -13,7 +13,7 @@ using System.IO;
 
 
 public class UFTAtlasEditor : EditorWindow {
-
+	[SerializeField]
 	private UFTAtlas uftAtlas;
 	public Vector2 scrollPosition = Vector2.zero;
 	
@@ -29,6 +29,12 @@ public class UFTAtlasEditor : EditorWindow {
 		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
 		UFTAtlasEditorEventManager.onNeedToRepaint+=onNeedToRepaint;
 	}
+	
+		
+	void Update(){
+		Repaint();	
+	}
+	
 	
 	private void onNeedToRepaint(){
 		Repaint ();
