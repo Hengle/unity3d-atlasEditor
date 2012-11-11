@@ -105,6 +105,7 @@ public class UFTAtlas : ScriptableObject {
 		UFTAtlasEditorEventManager.onStopDragging+=onStopDraggingListener;
 		UFTAtlasEditorEventManager.onTextureOnCanvasClick+=onTextureOnCanvasClickListener;
 		UFTAtlasEditorEventManager.onAtlasSizeChanged+=onAtlasSizeChanged;
+		onAtlasSizeChanged((int)atlasWidth,(int)atlasHeight);
 	}
 	
 	

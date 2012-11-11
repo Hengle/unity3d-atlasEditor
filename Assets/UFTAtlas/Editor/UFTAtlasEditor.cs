@@ -27,10 +27,12 @@ public class UFTAtlasEditor : EditorWindow {
 	
 	void OnEnable(){
 		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
-		
+		UFTAtlasEditorEventManager.onNeedToRepaint+=onNeedToRepaint;
 	}
 	
-	
+	private void onNeedToRepaint(){
+		Repaint ();
+	}	
 	
 	void OnGUI () {
 		

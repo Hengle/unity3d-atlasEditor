@@ -100,7 +100,8 @@ public class UFTAtlasEntry{
 				currentBlinkColor=(currentBlinkColor==blinkColor1)?blinkColor2:blinkColor1;
 			}
 			GUI.color=currentBlinkColor;
-			
+			if (UFTAtlasEditorEventManager.onNeedToRepaint!=null)
+				UFTAtlasEditorEventManager.onNeedToRepaint();
 		}
 		
 		

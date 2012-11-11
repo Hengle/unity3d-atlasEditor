@@ -31,7 +31,7 @@ public class UFTTextureUtil : MonoBehaviour {
 	public static Texture2D atlasCanvasBGTile {
 		get {
 			if (_atlasCanvasBGTile==null)
-				_atlasCanvasBGTile=getAtlasCanvasBGTile();
+				_atlasCanvasBGTile=getCheckerBoardTile();
 			return _atlasCanvasBGTile;
 		}
 		set {
@@ -92,7 +92,7 @@ public class UFTTextureUtil : MonoBehaviour {
 	public static Texture2D createOnePxBorderTexture(){
 		string assetPath="Assets/UFTAtlas/Editor/Texture/onePxBorder.png";
 		
-		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Mesh));
+		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		if (texture==null){
 			texture=new Texture2D(3,3);
 			Color[] c=new Color[9];
@@ -132,14 +132,14 @@ public class UFTTextureUtil : MonoBehaviour {
 	
 	
 	
-	public static Texture2D getAtlasCanvasBGTile(){
+	public static Texture2D getCheckerBoardTile(){
 		int squareWidth=1;
 		int textureWidth=2;
 		
 		string assetPath="Assets/UFTAtlas/Editor/Texture/AtlasCanvasBGTile.png";
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Mesh));
 		if (texture==null){
-			texture=createAtlasCanvasBGTexture(textureWidth,textureWidth,bgColor1,bgColor2, squareWidth);
+			texture=createCheckerBoard(textureWidth,textureWidth,bgColor1,bgColor2, squareWidth);
 			byte[] bytes = texture.EncodeToPNG();
 		    if (bytes != null)
 		      File.WriteAllBytes(assetPath, bytes);
@@ -160,7 +160,7 @@ public class UFTTextureUtil : MonoBehaviour {
 	
 	
 	//here we just generate Texture2d
-	 static Texture2D createAtlasCanvasBGTexture(int width, int height, Color bgColor1,Color bgColor2, int squareWidth){
+	 static Texture2D createCheckerBoard(int width, int height, Color bgColor1,Color bgColor2, int squareWidth){
 	
 		
 		Texture2D texture=new Texture2D(width,height);
