@@ -25,6 +25,10 @@ public class UFTAtlasEntry:ScriptableObject{
 	private long? controlBlinkTime=null;
 	public bool isSizeInvalid=false;
 	
+	
+	public void OnEnable(){
+		hideFlags = HideFlags.HideAndDontSave;	
+	}
 
 	
 	public UFTAtlasEntry (Rect canvasRect, Texture2D texture, UFTAtlas uftAtlas)
@@ -38,9 +42,13 @@ public class UFTAtlasEntry:ScriptableObject{
 	public void draw(){		
 		if (Event.current.type == EventType.MouseUp){
 			textureState=UFTTextureState.passive;
-			isDragging = false;			
-			if (UFTAtlasEditorEventManager.onStopDragging!=null)
-				UFTAtlasEditorEventManager.onStopDragging();
+			if (isDragging){
+				isDragging = false;			
+				if (UFTAtlasEditorEventManager.onStopDragging!=null)
+					UFTAtlasEditorEventManager.onStopDragging();
+				if (UFTAtlasEditorEventManager.onAtlasChange!=null)
+					UFTAtlasEditorEventManager.onAtlasChange();
+			}
 		} else if (Event.current.type == EventType.MouseDown && canvasRect.Contains (Event.current.mousePosition)){
 			textureState=UFTTextureState.onDrag;
 			isDragging = true;						

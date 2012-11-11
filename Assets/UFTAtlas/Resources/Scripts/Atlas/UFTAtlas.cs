@@ -32,6 +32,7 @@ public class UFTAtlas : ScriptableObject {
 	
 	
 	void OnEnable() {
+		hideFlags = HideFlags.HideAndDontSave;
 		initParams ();	
 	}
 	//uncoment it if you will have a problem with repaint
@@ -57,7 +58,7 @@ public class UFTAtlas : ScriptableObject {
 		// check fi user pressed button delete, in this case we will remove last element in the list
 		
 		if ((Event.current.type==EventType.keyDown) && (Event.current.keyCode == KeyCode.Delete) && (texturesOnCanvas!=null) && (texturesOnCanvas.Count >0)){			
-			texturesOnCanvas.RemoveAt(texturesOnCanvas.Count-1);
+			removeLatestEntryFromList ();
 		}
 		
 		
@@ -97,6 +98,7 @@ public class UFTAtlas : ScriptableObject {
 		uftAtlasEntry.texture=texture;
 		uftAtlasEntry.uftAtlas=this;
 		texturesOnCanvas.Add( uftAtlasEntry);
+		sendEventAtlasChanged();
 	}
 	
 	
@@ -126,7 +128,13 @@ public class UFTAtlas : ScriptableObject {
 	}
 	
 	private void onStopDraggingListener(){
-		Repaint();	
+		Repaint();			
+	}
+
+	void removeLatestEntryFromList ()
+	{
+		texturesOnCanvas.RemoveAt(texturesOnCanvas.Count-1);
+		sendEventAtlasChanged();
 	}
 	
 	private void Repaint(){
@@ -134,6 +142,11 @@ public class UFTAtlas : ScriptableObject {
 			UFTAtlasEditorEventManager.onNeedToRepaint();
 	}
 	
+	
+	private void sendEventAtlasChanged(){
+		if (UFTAtlasEditorEventManager.onAtlasChange!=null)
+			UFTAtlasEditorEventManager.onAtlasChange();
+	}
 	
 	// we cant move this element to the last position in the list, because in paralel iterator can use list
 	// because of that we will just store this value, and in nex frame in OnGUI function

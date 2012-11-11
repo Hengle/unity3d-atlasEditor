@@ -15,7 +15,10 @@ using System.IO;
 public class UFTAtlasEditor : EditorWindow {
 	[SerializeField]
 	private UFTAtlas uftAtlas;
+	
+	private bool isAtlasDirty=false;
 	public Vector2 scrollPosition = Vector2.zero;
+	
 	
 	
 
@@ -28,11 +31,18 @@ public class UFTAtlasEditor : EditorWindow {
 	void OnEnable(){
 		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
 		UFTAtlasEditorEventManager.onNeedToRepaint+=onNeedToRepaint;
+		UFTAtlasEditorEventManager.onAtlasChange+=onAtlasChange;
+		
 	}
 	
 		
 	void Update(){
 		Repaint();	
+	}
+
+	private void onAtlasChange ()
+	{
+		isAtlasDirty=true;
 	}
 	
 	
@@ -40,10 +50,11 @@ public class UFTAtlasEditor : EditorWindow {
 		Repaint ();
 	}	
 	
-	void OnGUI () {
-		
-	
-		
+	void OnGUI () {		
+		if (isAtlasDirty){
+			EditorUtility.SetDirty(uftAtlas);
+			isAtlasDirty=false;
+		}
 		EditorGUILayout.BeginVertical();
 			EditorGUILayout.BeginHorizontal (GUILayout.MinHeight(100f));
 				UFTAtlasSize newWidth =(UFTAtlasSize) EditorGUILayout.EnumPopup("atlas width",uftAtlas.atlasWidth);
