@@ -14,7 +14,7 @@ public class UFTAtlas : ScriptableObject {
 	public UFTAtlasSize atlasHeight=UFTAtlasSize._512;
 	
 	[SerializeField]
-	public List<UFTAtlasEntry> texturesOnCanvas;	
+	public List<UFTAtlasEntry> atlasEntries;	
 
 	Texture2D atlasCanvasBG;
 	
@@ -22,6 +22,9 @@ public class UFTAtlas : ScriptableObject {
 	
 	private static int atlasTileCubeFactor=16; // it equals of the cube size on bg
 	private Rect atlasBGTexCoord=new Rect(0,0,1,1);
+	
+	
+	
 	
 	
 	
@@ -49,15 +52,15 @@ public class UFTAtlas : ScriptableObject {
 		
 		//check if in previous frame we clicked on texture, if we did, move this texture to the last index in collection
 		if (recreateTexturesPositions){
-			texturesOnCanvas.Remove(clickedTextureOnCanvas);
-			texturesOnCanvas.Add(clickedTextureOnCanvas);
+			atlasEntries.Remove(clickedTextureOnCanvas);
+			atlasEntries.Add(clickedTextureOnCanvas);
 			recreateTexturesPositions=false;	
 		}
 		
 		
 		// check fi user pressed button delete, in this case we will remove last element in the list
 		
-		if ((Event.current.type==EventType.keyDown) && (Event.current.keyCode == KeyCode.Delete) && (texturesOnCanvas!=null) && (texturesOnCanvas.Count >0)){			
+		if ((Event.current.type==EventType.keyDown) && (Event.current.keyCode == KeyCode.Delete) && (atlasEntries!=null) && (atlasEntries.Count >0)){			
 			removeLatestEntryFromList ();
 		}
 		
@@ -67,8 +70,8 @@ public class UFTAtlas : ScriptableObject {
 		GUI.DrawTextureWithTexCoords(canvasRect,UFTTextureUtil.atlasCanvasBGTile,atlasBGTexCoord,false);
 	
 	
-		if(texturesOnCanvas!=null){
-			foreach(UFTAtlasEntry toc in  texturesOnCanvas){					
+		if(atlasEntries!=null){
+			foreach(UFTAtlasEntry toc in  atlasEntries){					
 				toc.draw();
 				
 			}	
@@ -80,7 +83,7 @@ public class UFTAtlas : ScriptableObject {
 				Color color=GUI.color;
 				GUI.color=UFTTextureUtil.borderColorDict[UFTTextureState.showBorder];
 					
-				foreach(UFTAtlasEntry toc in  texturesOnCanvas){						
+				foreach(UFTAtlasEntry toc in  atlasEntries){						
 					GUI.Box(toc.canvasRect,GUIContent.none,UFTTextureUtil.borderStyle);
 				}	
 				GUI.color=color;
@@ -97,7 +100,7 @@ public class UFTAtlas : ScriptableObject {
 		uftAtlasEntry.canvasRect=rect;
 		uftAtlasEntry.texture=texture;
 		uftAtlasEntry.uftAtlas=this;
-		texturesOnCanvas.Add( uftAtlasEntry);
+		atlasEntries.Add( uftAtlasEntry);
 		if (UFTAtlasEditorEventManager.onAddNewEntry!=null)
 			UFTAtlasEditorEventManager.onAddNewEntry(uftAtlasEntry);
 		sendEventAtlasChanged();
@@ -112,8 +115,8 @@ public class UFTAtlas : ScriptableObject {
 		borderTexture=UFTTextureUtil.createOnePxBorderTexture();
 		
 		
-		if(texturesOnCanvas==null)
-			texturesOnCanvas=new List<UFTAtlasEntry>();
+		if(atlasEntries==null)
+			atlasEntries=new List<UFTAtlasEntry>();
 		
 		//init listeners
 		UFTAtlasEditorEventManager.onDragInProgress+=onDragInProgressListener;
@@ -135,9 +138,9 @@ public class UFTAtlas : ScriptableObject {
 
 	void removeLatestEntryFromList ()
 	{		
-		UFTAtlasEntry latestEntry= texturesOnCanvas[texturesOnCanvas.Count-1];
+		UFTAtlasEntry latestEntry= atlasEntries[atlasEntries.Count-1];
 		UFTAtlasEditorEventManager.onRemoveEntry(latestEntry);			
-		texturesOnCanvas.Remove(latestEntry);
+		atlasEntries.Remove(latestEntry);
 		sendEventAtlasChanged();
 	}
 	
@@ -166,5 +169,33 @@ public class UFTAtlas : ScriptableObject {
 	void onAtlasSizeChanged (int atlasWidth, int atlasHeight)
 	{	
 		atlasBGTexCoord=new Rect(0,0,atlasWidth/atlasTileCubeFactor,atlasHeight/atlasTileCubeFactor);				
+	}
+	
+	
+	public void  arrangeEntriesUsingUnityPackager(){
+		int width=(int)atlasWidth;
+		int height=(int)atlasHeight;
+		Texture2D tmpTexture=new Texture2D(width,height);
+		Texture2D[] entries= atlasEntries.ConvertAll<Texture2D>(entry=>entry.texture).ToArray();
+		
+		Debug.Log("count==="+entries.Length);
+		
+		
+		Rect[] rects=tmpTexture.PackTextures(entries,0);
+		
+		for (int i = 0; i < rects.Length; i++) {
+			//convert rect from Atlas(which has 0->1 values, 0.5 means center to pixel values)
+			
+			
+			Debug.Log("original rect="+atlasEntries[i].canvasRect);
+			Rect newRect=new Rect(rects[i].x*width,rects[i].y*height,atlasEntries[i].canvasRect.width,atlasEntries[i].canvasRect.height);
+			
+			atlasEntries[i].canvasRect=newRect;
+			
+			Debug.Log("rects["+i+"]="+newRect);
+		}
+		
+		
+		
 	}
 }

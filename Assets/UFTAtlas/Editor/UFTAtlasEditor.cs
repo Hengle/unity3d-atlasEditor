@@ -36,7 +36,7 @@ public class UFTAtlasEditor : EditorWindow {
 		UFTAtlasEditorEventManager.onRemoveEntry+=onRemoveEntry;
 		UFTAtlasEditorEventManager.onStopDragging+=onStopDragging;
 		UFTAtlasEditorEventManager.onStartDragging+=onStartDragging;
-		foreach (UFTAtlasEntry uftAtlasEntry in uftAtlas.texturesOnCanvas) {
+		foreach (UFTAtlasEntry uftAtlasEntry in uftAtlas.atlasEntries) {
 			Undo.RegisterUndo(uftAtlas,"UFTAtlasEntry"+uftAtlasEntry.id);	
 		}
 		
@@ -101,7 +101,11 @@ public class UFTAtlasEditor : EditorWindow {
 			EditorGUILayout.BeginHorizontal (GUILayout.MinHeight(100f));
 				UFTAtlasSize newWidth =(UFTAtlasSize) EditorGUILayout.EnumPopup("atlas width",uftAtlas.atlasWidth);
 				UFTAtlasSize newHeight =(UFTAtlasSize) EditorGUILayout.EnumPopup("atlas height",uftAtlas.atlasHeight);	
+				if (GUILayout.Button("arrange") && uftAtlas!=null && uftAtlas.atlasEntries.Count>0)
+					uftAtlas.arrangeEntriesUsingUnityPackager();
 				
+		
+		
 				if (newWidth!=uftAtlas.atlasWidth || newHeight!=uftAtlas.atlasHeight){
 					uftAtlas.atlasWidth=newWidth;
 					uftAtlas.atlasHeight=newHeight;
@@ -166,7 +170,7 @@ public class UFTAtlasEditor : EditorWindow {
 	
 	private bool isTextureCanvasContainsTexture (Texture2D texture)
 	{
-		return uftAtlas.texturesOnCanvas.Find(toc => toc.texture == texture)!=null;
+		return uftAtlas.atlasEntries.Find(toc => toc.texture == texture)!=null;
 	}
 	
 }
