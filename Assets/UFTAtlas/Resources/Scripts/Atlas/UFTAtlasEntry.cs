@@ -13,6 +13,20 @@ public class UFTAtlasEntry:ScriptableObject{
 	[SerializeField]
 	public Rect canvasRect;
 	
+	public static int _idCounter;
+	
+	[SerializeField]
+	public int? _id;
+
+	public int? id {
+		get {
+			if (this._id==null){
+				_idCounter++;
+				this._id=_idCounter;
+			}
+			return this._id;
+		}		
+	}	
 	public UFTAtlas uftAtlas;		
 	private bool isDragging=false;
 	private Vector2 mouseStartPosition;
@@ -27,7 +41,7 @@ public class UFTAtlasEntry:ScriptableObject{
 	
 	
 	public void OnEnable(){
-		hideFlags = HideFlags.HideAndDontSave;	
+		hideFlags = HideFlags.HideAndDontSave;			
 	}
 
 	
@@ -45,7 +59,7 @@ public class UFTAtlasEntry:ScriptableObject{
 			if (isDragging){
 				isDragging = false;			
 				if (UFTAtlasEditorEventManager.onStopDragging!=null)
-					UFTAtlasEditorEventManager.onStopDragging();
+					UFTAtlasEditorEventManager.onStopDragging(this);
 				if (UFTAtlasEditorEventManager.onAtlasChange!=null)
 					UFTAtlasEditorEventManager.onAtlasChange();
 			}
@@ -54,8 +68,8 @@ public class UFTAtlasEntry:ScriptableObject{
 			isDragging = true;						
 			textureState=UFTTextureState.onDrag;
 			mouseStartPosition=Event.current.mousePosition;	
-			if (UFTAtlasEditorEventManager.onTextureOnCanvasClick!=null)
-				UFTAtlasEditorEventManager.onTextureOnCanvasClick(this);
+			if (UFTAtlasEditorEventManager.onStartDragging!=null)
+				UFTAtlasEditorEventManager.onStartDragging(this);
 			Event.current.Use();				
 		}
 		Color color=GUI.color;

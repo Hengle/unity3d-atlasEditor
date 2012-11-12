@@ -98,6 +98,8 @@ public class UFTAtlas : ScriptableObject {
 		uftAtlasEntry.texture=texture;
 		uftAtlasEntry.uftAtlas=this;
 		texturesOnCanvas.Add( uftAtlasEntry);
+		if (UFTAtlasEditorEventManager.onAddNewEntry!=null)
+			UFTAtlasEditorEventManager.onAddNewEntry(uftAtlasEntry);
 		sendEventAtlasChanged();
 	}
 	
@@ -116,7 +118,7 @@ public class UFTAtlas : ScriptableObject {
 		//init listeners
 		UFTAtlasEditorEventManager.onDragInProgress+=onDragInProgressListener;
 		UFTAtlasEditorEventManager.onStopDragging+=onStopDraggingListener;
-		UFTAtlasEditorEventManager.onTextureOnCanvasClick+=onTextureOnCanvasClickListener;
+		UFTAtlasEditorEventManager.onStartDragging+=onStartDraggingListener;
 		UFTAtlasEditorEventManager.onAtlasSizeChanged+=onAtlasSizeChanged;
 		onAtlasSizeChanged((int)atlasWidth,(int)atlasHeight);
 	}
@@ -127,13 +129,15 @@ public class UFTAtlas : ScriptableObject {
 		Repaint();	
 	}
 	
-	private void onStopDraggingListener(){
+	private void onStopDraggingListener(UFTAtlasEntry uftAtlasEntry){		
 		Repaint();			
 	}
 
 	void removeLatestEntryFromList ()
-	{
-		texturesOnCanvas.RemoveAt(texturesOnCanvas.Count-1);
+	{		
+		UFTAtlasEntry latestEntry= texturesOnCanvas[texturesOnCanvas.Count-1];
+		UFTAtlasEditorEventManager.onRemoveEntry(latestEntry);			
+		texturesOnCanvas.Remove(latestEntry);
 		sendEventAtlasChanged();
 	}
 	
@@ -151,7 +155,7 @@ public class UFTAtlas : ScriptableObject {
 	// we cant move this element to the last position in the list, because in paralel iterator can use list
 	// because of that we will just store this value, and in nex frame in OnGUI function
 	// we will move this object to the last position
-	private void onTextureOnCanvasClickListener (UFTAtlasEntry textureOnCanvas)
+	private void onStartDraggingListener (UFTAtlasEntry textureOnCanvas)
 	{		
 		clickedTextureOnCanvas=textureOnCanvas;		
 		recreateTexturesPositions=true;

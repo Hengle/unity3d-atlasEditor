@@ -32,6 +32,46 @@ public class UFTAtlasEditor : EditorWindow {
 		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
 		UFTAtlasEditorEventManager.onNeedToRepaint+=onNeedToRepaint;
 		UFTAtlasEditorEventManager.onAtlasChange+=onAtlasChange;
+		UFTAtlasEditorEventManager.onAddNewEntry+=onAddNewEntry;
+		UFTAtlasEditorEventManager.onRemoveEntry+=onRemoveEntry;
+		UFTAtlasEditorEventManager.onStopDragging+=onStopDragging;
+		UFTAtlasEditorEventManager.onStartDragging+=onStartDragging;
+		foreach (UFTAtlasEntry uftAtlasEntry in uftAtlas.texturesOnCanvas) {
+			Undo.RegisterUndo(uftAtlas,"UFTAtlasEntry"+uftAtlasEntry.id);	
+		}
+		
+		
+	}
+
+	public void onAddNewEntry (UFTAtlasEntry uftAtlasEntry)
+	{		
+		Undo.RegisterUndo(uftAtlasEntry,"UFTAtlasEntry" + uftAtlasEntry.id);
+	}
+
+	public void onStopDragging (UFTAtlasEntry uftAtlasEntry)
+	{
+		//Undo.SetSnapshotTarget(uftAtlasEntry,"stop dragging uftAtlasEntry id="+uftAtlasEntry.id);
+	}
+
+	public void onStartDragging (UFTAtlasEntry uftAtlasEntry)
+	{
+		registerSnapshotTargetState (uftAtlasEntry);
+	}
+
+	public void onRemoveEntry (UFTAtlasEntry uftAtlasEntry)
+	{		
+		registerSnapshotTargetState (uftAtlasEntry);
+	}
+
+	void registerSnapshotTargetState (UFTAtlasEntry uftAtlasEntry)
+	{
+		Undo.SetSnapshotTarget(uftAtlas,"atlas");
+		Undo.CreateSnapshot();
+		Undo.RegisterSnapshot();
+		
+		Undo.SetSnapshotTarget(uftAtlasEntry,"stop dragging uftAtlasEntry id="+uftAtlasEntry.id);
+		Undo.CreateSnapshot();
+		Undo.RegisterSnapshot();
 		
 	}
 	
@@ -43,6 +83,8 @@ public class UFTAtlasEditor : EditorWindow {
 	private void onAtlasChange ()
 	{
 		isAtlasDirty=true;
+		Undo.CreateSnapshot();
+        Undo.RegisterSnapshot();
 	}
 	
 	

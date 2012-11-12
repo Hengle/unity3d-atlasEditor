@@ -2,18 +2,22 @@ using UnityEngine;
 using System.Collections;
 
 public delegate void DragInProgress();
-public delegate void StopDragging();
+public delegate void StopDragging(UFTAtlasEntry uftAtlasEntry);
 public delegate void AtlasSizeChanged(int width, int height);
-public delegate void TextureOnCanvasClick(UFTAtlasEntry textureOnCanvas);
+public delegate void StartDragging(UFTAtlasEntry uftAtlasEntry);
 public delegate void NeedToRepaint();
 public delegate void AtlasChange();
+public delegate void AddNewEntry(UFTAtlasEntry uftAtlasEntry);
+public delegate void RemoveEntry(UFTAtlasEntry uftAtlasEntry);
 
 
 public class UFTAtlasEditorEventManager {
 	public static DragInProgress onDragInProgress;
 	public static StopDragging onStopDragging;
 	public static AtlasSizeChanged onAtlasSizeChanged;
-	public static TextureOnCanvasClick onTextureOnCanvasClick;
+	public static StartDragging onStartDragging;
 	public static NeedToRepaint onNeedToRepaint; 
-	public static AtlasChange onAtlasChange;	
+	public static AtlasChange onAtlasChange;
+	public static AddNewEntry onAddNewEntry;
+	public static RemoveEntry onRemoveEntry;
 }
