@@ -15,7 +15,10 @@ public class UFTAtlas : ScriptableObject {
 	
 	[SerializeField]
 	public List<UFTAtlasEntry> atlasEntries;	
-
+	
+	[SerializeField]
+	public int borderSize=2;
+	
 	Texture2D atlasCanvasBG;
 	
 	public static Texture2D borderTexture;
@@ -181,7 +184,7 @@ public class UFTAtlas : ScriptableObject {
 		Debug.Log("count==="+entries.Length);
 		
 		
-		Rect[] rects=tmpTexture.PackTextures(entries,0);
+		Rect[] rects=tmpTexture.PackTextures(entries,borderSize);
 		
 		for (int i = 0; i < rects.Length; i++) {
 			//convert rect from Atlas(which has 0->1 values, 0.5 means center to pixel values)

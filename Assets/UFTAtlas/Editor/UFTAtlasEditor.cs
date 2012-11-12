@@ -21,8 +21,6 @@ public class UFTAtlasEditor : EditorWindow {
 	
 	
 	
-
-	
 	[MenuItem ("Window/Free Atlas Maker")]
     static void ShowWindow () {    		
 		EditorWindow.GetWindow <UFTAtlasEditor>();				
@@ -39,7 +37,6 @@ public class UFTAtlasEditor : EditorWindow {
 		foreach (UFTAtlasEntry uftAtlasEntry in uftAtlas.atlasEntries) {
 			Undo.RegisterUndo(uftAtlas,"UFTAtlasEntry"+uftAtlasEntry.id);	
 		}
-		
 		
 	}
 
@@ -92,7 +89,7 @@ public class UFTAtlasEditor : EditorWindow {
 		Repaint ();
 	}	
 	
-	void OnGUI () {		
+	void OnGUI () {				
 		if (isAtlasDirty){
 			EditorUtility.SetDirty(uftAtlas);
 			isAtlasDirty=false;
@@ -104,8 +101,8 @@ public class UFTAtlasEditor : EditorWindow {
 				if (GUILayout.Button("arrange") && uftAtlas!=null && uftAtlas.atlasEntries.Count>0)
 					uftAtlas.arrangeEntriesUsingUnityPackager();
 				
-		
-		
+				uftAtlas.borderSize=EditorGUILayout.IntField(uftAtlas.borderSize);
+				
 				if (newWidth!=uftAtlas.atlasWidth || newHeight!=uftAtlas.atlasHeight){
 					uftAtlas.atlasWidth=newWidth;
 					uftAtlas.atlasHeight=newHeight;
@@ -137,8 +134,7 @@ public class UFTAtlasEditor : EditorWindow {
             
 			DragAndDrop.AcceptDrag();
 	        Event.current.Use();
-	    }
-		
+	    }		
 	}
 
 
