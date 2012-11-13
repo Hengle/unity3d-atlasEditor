@@ -9,6 +9,7 @@ public delegate void NeedToRepaint();
 public delegate void AtlasChange();
 public delegate void AddNewEntry(UFTAtlasEntry uftAtlasEntry);
 public delegate void RemoveEntry(UFTAtlasEntry uftAtlasEntry);
+public delegate void TextureSizeChanged(UFTAtlasEntry uftAtlasEntry);
 
 
 public class UFTAtlasEditorEventManager {
@@ -20,4 +21,5 @@ public class UFTAtlasEditorEventManager {
 	public static AtlasChange onAtlasChange;
 	public static AddNewEntry onAddNewEntry;
 	public static RemoveEntry onRemoveEntry;
+	public static TextureSizeChanged onTextureSizeChanged;
 }

@@ -190,4 +190,85 @@ public class UFTTextureUtil : MonoBehaviour {
 		
 		return texture;
 	}
+	
+	
+	
+	//remove odd alpha stripes on texture borders
+	public static Texture2D trimTextureAlpha(Texture2D texture){		
+		int width=texture.width;
+		int height=texture.height;
+		int minU=width;
+		int maxU=0;
+		int minV=height;
+		int maxV=0;
+		Color32[] originalColor=texture.GetPixels32();
+		
+		
+
+		bool previousRowWasEmpty=true;
+		for (int v = 0; v < height; v++) {
+			bool previousColumnWasEmpty=true;
+
+			bool isRowEmpty=true;
+			int maxRightU=0;
+			for (int u = 0; u < width; u++) {
+				float alpha=originalColor[(v*width) +u].a;				
+				if (alpha!=0){
+					if (u<minU)
+						minU=u;			
+					
+					if (!previousColumnWasEmpty){
+						maxRightU=u;
+					}
+					previousColumnWasEmpty=false;
+					isRowEmpty=false;					
+				} else {
+					previousColumnWasEmpty=true;
+				}
+			}
+			
+			if (!isRowEmpty && maxRightU>maxU){				
+				maxU=maxRightU;			
+			}
+			
+			
+			if (!isRowEmpty){
+				if (v<minV)
+					minV=v;
+				if (!previousRowWasEmpty){
+					maxV=v;
+				}				
+				previousRowWasEmpty=false;
+			}else{
+				previousRowWasEmpty=true;
+			}
+			
+			
+		}
+		
+		int i=0;
+		int newWidth=maxU-minU+1;
+		int newHeight=maxV-minV+1;
+		if (newWidth!=width || newHeight!=height){
+			
+			int newColorSize=(newWidth*newHeight);
+			Debug.Log("newColorSize="+newColorSize);
+			Color32[] newColor=new Color32[newColorSize];
+			if(newColor.Length==0)
+				throw new System.Exception("trimmed texture has a zerro size");
+			for (int v = minV; v <= maxV; v++) {
+				for (int u = minU; u <= maxU; u++) {
+					newColor[i]=originalColor[v*width+u];					
+					i++;
+				}
+			}
+			Texture2D result=new Texture2D(newWidth,newHeight);
+			
+			result.SetPixels32(newColor);		
+			result.Apply();
+			return result;
+		} 
+		return texture;
+	}
+	
 }

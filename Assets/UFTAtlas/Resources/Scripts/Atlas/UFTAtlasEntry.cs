@@ -53,7 +53,7 @@ public class UFTAtlasEntry:ScriptableObject{
 		this.uftAtlas=uftAtlas;
 	}
 	
-	public void draw(){		
+	public void OnGUI(){		
 		if (Event.current.type == EventType.MouseUp){
 			textureState=UFTTextureState.passive;
 			if (isDragging){
@@ -129,8 +129,8 @@ public class UFTAtlasEntry:ScriptableObject{
 				UFTAtlasEditorEventManager.onNeedToRepaint();
 		}
 		
-		
-		EditorGUI.DrawPreviewTexture(canvasRect,texture);			
+		GUI.DrawTexture(canvasRect,texture,ScaleMode.ScaleToFit,true);
+		//EditorGUI.DrawPreviewTexture(canvasRect,texture);			
 		
 
 

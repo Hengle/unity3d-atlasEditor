@@ -75,7 +75,7 @@ public class UFTAtlas : ScriptableObject {
 	
 		if(atlasEntries!=null){
 			foreach(UFTAtlasEntry toc in  atlasEntries){					
-				toc.draw();
+				toc.OnGUI();
 				
 			}	
 	
@@ -129,6 +129,27 @@ public class UFTAtlas : ScriptableObject {
 		onAtlasSizeChanged((int)atlasWidth,(int)atlasHeight);
 	}
 	
+	public void removeAllEntries(){
+		while(atlasEntries.Count>0)
+			removeLatestEntryFromList();		
+	}
+	
+	public void trimAllEntries(){
+		bool somethingChanged=false;
+		foreach(UFTAtlasEntry atlasEntry in atlasEntries){
+			Texture2D newTexture=UFTTextureUtil.trimTextureAlpha (atlasEntry.texture);
+			if (newTexture!=atlasEntry.texture){
+				atlasEntry.canvasRect.width=newTexture.width;
+				atlasEntry.canvasRect.height=newTexture.height;
+				atlasEntry.texture=newTexture;
+				if (UFTAtlasEditorEventManager.onTextureSizeChanged!=null)
+					UFTAtlasEditorEventManager.onTextureSizeChanged(atlasEntry);
+				somethingChanged=true;
+			}
+		}
+		if (somethingChanged)
+			sendEventAtlasChanged();
+	}
 	
 	
 	private void onDragInProgressListener(){
@@ -142,7 +163,8 @@ public class UFTAtlas : ScriptableObject {
 	void removeLatestEntryFromList ()
 	{		
 		UFTAtlasEntry latestEntry= atlasEntries[atlasEntries.Count-1];
-		UFTAtlasEditorEventManager.onRemoveEntry(latestEntry);			
+		if (UFTAtlasEditorEventManager.onRemoveEntry!=null)
+			UFTAtlasEditorEventManager.onRemoveEntry(latestEntry);			
 		atlasEntries.Remove(latestEntry);
 		sendEventAtlasChanged();
 	}

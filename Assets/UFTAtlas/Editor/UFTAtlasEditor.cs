@@ -18,10 +18,11 @@ public class UFTAtlasEditor : EditorWindow {
 	
 	private bool isAtlasDirty=false;
 	public Vector2 scrollPosition = Vector2.zero;
+	public Vector2 atlasTexturesScrollPosition=Vector2.zero;
 	
 	
 	
-	[MenuItem ("Window/Free Atlas Maker")]
+	[MenuItem ("Window/Free Atlas Editor")]
     static void ShowWindow () {    		
 		EditorWindow.GetWindow <UFTAtlasEditor>();				
     }
@@ -29,14 +30,17 @@ public class UFTAtlasEditor : EditorWindow {
 	void OnEnable(){
 		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
 		UFTAtlasEditorEventManager.onNeedToRepaint+=onNeedToRepaint;
-		UFTAtlasEditorEventManager.onAtlasChange+=onAtlasChange;
+		UFTAtlasEditorEventManager.onAtlasChange+=onAtlasChange;		
 		UFTAtlasEditorEventManager.onAddNewEntry+=onAddNewEntry;
 		UFTAtlasEditorEventManager.onRemoveEntry+=onRemoveEntry;
 		UFTAtlasEditorEventManager.onStopDragging+=onStopDragging;
 		UFTAtlasEditorEventManager.onStartDragging+=onStartDragging;
+		UFTAtlasEditorEventManager.onTextureSizeChanged+=onTextureSizeChanged;
 		foreach (UFTAtlasEntry uftAtlasEntry in uftAtlas.atlasEntries) {
 			Undo.RegisterUndo(uftAtlas,"UFTAtlasEntry"+uftAtlasEntry.id);	
 		}
+		
+
 		
 	}
 
@@ -62,6 +66,17 @@ public class UFTAtlasEditor : EditorWindow {
 
 	void registerSnapshotTargetState (UFTAtlasEntry uftAtlasEntry)
 	{
+		registerSnapshotForEntry (uftAtlasEntry);
+		
+	}
+
+	void onTextureSizeChanged (UFTAtlasEntry uftAtlasEntry)
+	{
+		registerSnapshotForEntry (uftAtlasEntry);
+	}
+
+	void registerSnapshotForEntry (UFTAtlasEntry uftAtlasEntry)
+	{
 		Undo.SetSnapshotTarget(uftAtlas,"atlas");
 		Undo.CreateSnapshot();
 		Undo.RegisterSnapshot();
@@ -69,7 +84,6 @@ public class UFTAtlasEditor : EditorWindow {
 		Undo.SetSnapshotTarget(uftAtlasEntry,"stop dragging uftAtlasEntry id="+uftAtlasEntry.id);
 		Undo.CreateSnapshot();
 		Undo.RegisterSnapshot();
-		
 	}
 	
 		
@@ -94,14 +108,26 @@ public class UFTAtlasEditor : EditorWindow {
 			EditorUtility.SetDirty(uftAtlas);
 			isAtlasDirty=false;
 		}
-		EditorGUILayout.BeginVertical();
-			EditorGUILayout.BeginHorizontal (GUILayout.MinHeight(100f));
-				UFTAtlasSize newWidth =(UFTAtlasSize) EditorGUILayout.EnumPopup("atlas width",uftAtlas.atlasWidth);
-				UFTAtlasSize newHeight =(UFTAtlasSize) EditorGUILayout.EnumPopup("atlas height",uftAtlas.atlasHeight);	
-				if (GUILayout.Button("arrange") && uftAtlas!=null && uftAtlas.atlasEntries.Count>0)
+		EditorGUILayout.Separator();
+		EditorGUILayout.BeginHorizontal();
+			
+			EditorGUILayout.BeginVertical (new GUILayoutOption[]{GUILayout.Width(250f)});
+				EditorGUILayout.Separator();		
+				EditorGUILayout.LabelField("Atlas:");
+				UFTAtlasSize newWidth =(UFTAtlasSize) EditorGUILayout.EnumPopup("width",uftAtlas.atlasWidth);
+				UFTAtlasSize newHeight =(UFTAtlasSize) EditorGUILayout.EnumPopup("height",uftAtlas.atlasHeight);	
+				if (GUILayout.Button("clear"))
+					uftAtlas.removeAllEntries();
+					
+				
+				EditorGUILayout.Separator();
+				EditorGUILayout.LabelField("Allign:");
+		
+				uftAtlas.borderSize=EditorGUILayout.IntField("border size",uftAtlas.borderSize);
+				if (GUILayout.Button("allign") && uftAtlas!=null && uftAtlas.atlasEntries.Count>0)
 					uftAtlas.arrangeEntriesUsingUnityPackager();
 				
-				uftAtlas.borderSize=EditorGUILayout.IntField(uftAtlas.borderSize);
+				
 				
 				if (newWidth!=uftAtlas.atlasWidth || newHeight!=uftAtlas.atlasHeight){
 					uftAtlas.atlasWidth=newWidth;
@@ -110,22 +136,44 @@ public class UFTAtlasEditor : EditorWindow {
 					if (UFTAtlasEditorEventManager.onAtlasSizeChanged!=null)
 						UFTAtlasEditorEventManager.onAtlasSizeChanged((int)newWidth,(int)newHeight);
 				}
-			EditorGUILayout.EndHorizontal();
 		
+				EditorGUILayout.Separator();
+				EditorGUILayout.LabelField("Atlas Textures:");
+				if (uftAtlas.atlasEntries.Count>0){
+					if (GUILayout.Button("trim alpha")){
+						uftAtlas.trimAllEntries();				
+					}					
+				}
+				atlasTexturesScrollPosition = EditorGUILayout.BeginScrollView(atlasTexturesScrollPosition);
+				foreach (UFTAtlasEntry entry in uftAtlas.atlasEntries){
+					EditorGUILayout.TextField("11"+entry.uftAtlas.name,GUILayout.MaxWidth(220f));
+				}			
+				EditorGUILayout.EndScrollView();
+		
+				
+				EditorGUILayout.Separator();
+			EditorGUILayout.EndVertical();
+			
+				
+			EditorGUILayout.BeginVertical();	
+				EditorGUILayout.Separator();
+				EditorGUILayout.BeginHorizontal();
+					
+					scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+						
+							
+					GUILayoutUtility.GetRect((int)uftAtlas.atlasWidth,(int)uftAtlas.atlasHeight);
+					uftAtlas.OnGUI();
+				
+					EditorGUILayout.EndScrollView();
+					EditorGUILayout.Separator();
+				EditorGUILayout.EndHorizontal();				
+			EditorGUILayout.EndVertical();
 			
 		
-			scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
-				
-				
-			GUILayoutUtility.GetRect((int)uftAtlas.atlasWidth,(int)uftAtlas.atlasHeight);
-			uftAtlas.OnGUI();
+		EditorGUILayout.EndHorizontal();
 		
-			EditorGUILayout.EndScrollView();
-		
-			
-		
-		EditorGUILayout.EndVertical();
-		
+		EditorGUILayout.Separator();
 		
 		 if (Event.current.type == EventType.DragUpdated || Event.current.type == EventType.DragPerform){
 	        DragAndDrop.visualMode = DragAndDropVisualMode.Copy; // show a drag-add icon on the mouse cursor
