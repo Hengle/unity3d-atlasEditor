@@ -114,10 +114,18 @@ public class UFTAtlasEditor : EditorWindow {
 			EditorGUILayout.BeginVertical (new GUILayoutOption[]{GUILayout.Width(250f)});
 				EditorGUILayout.Separator();		
 				EditorGUILayout.LabelField("Atlas:");
-				UFTAtlasSize newWidth =(UFTAtlasSize) EditorGUILayout.EnumPopup("width",uftAtlas.atlasWidth);
-				UFTAtlasSize newHeight =(UFTAtlasSize) EditorGUILayout.EnumPopup("height",uftAtlas.atlasHeight);	
-				if (GUILayout.Button("clear"))
-					uftAtlas.removeAllEntries();
+				EditorGUILayout.TextField("name","");
+				EditorGUILayout.BeginHorizontal();
+		
+					if (GUILayout.Button("new"))
+						onClickNew();		
+					if (GUILayout.Button("save"))
+						onClickSave();
+				EditorGUILayout.EndHorizontal();
+		
+				UFTAtlasSize newWidth = (UFTAtlasSize) EditorGUILayout.EnumPopup("width",uftAtlas.atlasWidth);
+				UFTAtlasSize newHeight = (UFTAtlasSize) EditorGUILayout.EnumPopup("height",uftAtlas.atlasHeight);	
+				
 					
 				
 				EditorGUILayout.Separator();
@@ -145,12 +153,15 @@ public class UFTAtlasEditor : EditorWindow {
 					}					
 				}
 				atlasTexturesScrollPosition = EditorGUILayout.BeginScrollView(atlasTexturesScrollPosition);
-				foreach (UFTAtlasEntry entry in uftAtlas.atlasEntries){
-					EditorGUILayout.TextField("11"+entry.uftAtlas.name,GUILayout.MaxWidth(220f));
-				}			
-				EditorGUILayout.EndScrollView();
-		
 				
+				if (uftAtlas.atlasEntries.Count >0){
+					List<string> names= uftAtlas.atlasEntries.ConvertAll(new System.Converter<UFTAtlasEntry,string>(uftAtlasEntryToString));
+					names.Sort();
+					foreach (string name in names) {
+						EditorGUILayout.LabelField(name,GUILayout.MaxWidth(220f));
+					}					
+				}		
+				EditorGUILayout.EndScrollView();
 				EditorGUILayout.Separator();
 			EditorGUILayout.EndVertical();
 			
@@ -198,7 +209,8 @@ public class UFTAtlasEditor : EditorWindow {
 				if (isTextureCanvasContainsTexture (texture)){
 					Debug.Log("one of texture is already on Canvas");
 				} else {
-					uftAtlas.addNewEntry(texture);
+					string assetPath=AssetDatabase.GetAssetPath(texture);					
+					uftAtlas.addNewEntry(texture,assetPath);
 						
 				}
 				
@@ -209,12 +221,31 @@ public class UFTAtlasEditor : EditorWindow {
 			Debug.Log("there was no any Texture2D in dropped content");
 	}
 
+	void onClickSave ()
+	{
+		UFTAtlasMetadata metadata=uftAtlas.getAtlasMetadata("testName");
+		AssetDatabase.CreateAsset(metadata,"Assets/testName.asset");
+		
+	}
+
+	void onClickNew ()
+	{
+		throw new System.NotImplementedException ();
+	}
+
 	
 	
 	
 	private bool isTextureCanvasContainsTexture (Texture2D texture)
 	{
 		return uftAtlas.atlasEntries.Find(toc => toc.texture == texture)!=null;
+	}
+	
+	
+	
+	// this function used as converter in OnGUI to show list of the entry names
+	private static string uftAtlasEntryToString(UFTAtlasEntry uftAtlasEntry){
+		return uftAtlasEntry.name;
 	}
 	
 }

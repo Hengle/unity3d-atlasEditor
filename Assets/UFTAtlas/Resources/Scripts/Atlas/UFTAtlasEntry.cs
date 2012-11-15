@@ -13,6 +13,19 @@ public class UFTAtlasEntry:ScriptableObject{
 	[SerializeField]
 	public Rect canvasRect;
 	
+	[SerializeField]
+	public string assetPath;
+	
+	[SerializeField]
+	public string name;
+	
+	
+	[SerializeField]
+	public bool isTrimmed=false;
+	
+	
+	
+	
 	public static int _idCounter;
 	
 	[SerializeField]
@@ -27,6 +40,19 @@ public class UFTAtlasEntry:ScriptableObject{
 			return this._id;
 		}		
 	}	
+	
+	
+	public Rect uvRect {
+		get {
+			float x = canvasRect.x == 0 ? 0 : (float) uftAtlas.atlasWidth / (float)canvasRect.x;
+			float y = canvasRect.y == 0 ? 0 : (float) uftAtlas.atlasHeight / (float)canvasRect.y;
+			float width = (float) uftAtlas.atlasWidth / (float)canvasRect.width;
+			float height= (float) uftAtlas.atlasHeight / (float)canvasRect.height;
+			return new Rect(x,y,width,height);
+		}
+	}
+	
+	
 	public UFTAtlas uftAtlas;		
 	private bool isDragging=false;
 	private Vector2 mouseStartPosition;

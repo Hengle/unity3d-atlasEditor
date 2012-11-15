@@ -97,9 +97,13 @@ public class UFTAtlas : ScriptableObject {
 	}
 	
 	
-	public void addNewEntry(Texture2D texture){		
+	public void addNewEntry(Texture2D texture, string assetPath){		
+		string name=assetPath.Substring(assetPath.LastIndexOf('/')+1);
+		
 		Rect rect=new Rect(0,0,texture.width,texture.height);
 		UFTAtlasEntry uftAtlasEntry=UFTAtlasEntry.CreateInstance<UFTAtlasEntry>();
+		uftAtlasEntry.assetPath=assetPath;
+		uftAtlasEntry.name=name;		
 		uftAtlasEntry.canvasRect=rect;
 		uftAtlasEntry.texture=texture;
 		uftAtlasEntry.uftAtlas=this;
@@ -195,6 +199,24 @@ public class UFTAtlas : ScriptableObject {
 	{	
 		atlasBGTexCoord=new Rect(0,0,atlasWidth/atlasTileCubeFactor,atlasHeight/atlasTileCubeFactor);				
 	}
+	
+	
+	
+	
+	public UFTAtlasMetadata getAtlasMetadata(string name){
+		List<UFTAtlasEntryMetadata> entryMeta=atlasEntries.ConvertAll(new Converter<UFTAtlasEntry,UFTAtlasEntryMetadata>(entryToEntryMetaConverter));
+		
+		UFTAtlasMetadata atlasMetadata=new UFTAtlasMetadata();
+		atlasMetadata.entries=entryMeta.ToArray();		
+		return atlasMetadata;
+	}
+	
+		
+	private static UFTAtlasEntryMetadata entryToEntryMetaConverter(UFTAtlasEntry entry){
+		UFTAtlasEntryMetadata uftMeta=new UFTAtlasEntryMetadata(entry.name,entry.assetPath,entry.canvasRect,entry.uvRect, entry.isTrimmed);
+		return uftMeta;
+	}
+			
 	
 	
 	public void  arrangeEntriesUsingUnityPackager(){
