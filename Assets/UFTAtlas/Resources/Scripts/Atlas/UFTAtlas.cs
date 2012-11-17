@@ -97,13 +97,20 @@ public class UFTAtlas : ScriptableObject {
 	}
 	
 	public void readPropertiesFromMetadata(UFTAtlasMetadata atlasMetadata){
-		atlasWidth=atlasMetadata.texture.width;
-		atlasHeight=atlasMetadata.texture.height;
+		atlasWidth=(UFTAtlasSize) atlasMetadata.texture.width;
+		atlasHeight=(UFTAtlasSize) atlasMetadata.texture.height;
 		List<UFTAtlasEntry> entries=new List<UFTAtlasEntry>();
 		foreach (UFTAtlasEntryMetadata meta in  atlasMetadata.entries){
-			
-		
+			UFTAtlasEntry entry=UFTAtlasEntry.CreateInstance<UFTAtlasEntry>();
+			try{
+				entry.readPropertiesFromMetadata(meta);
+				entry.uftAtlas=this;
+				entries.Add(entry);				
+			}catch (TextureDoesNotExistsException e){
+				Debug.LogWarning("texture "+e.texturePath+" does not exists exception");				
+			}				
 		}		
+		this.atlasEntries=entries;
 	}
 	
 	
@@ -249,7 +256,6 @@ public class UFTAtlas : ScriptableObject {
 			//convert rect from Atlas(which has 0->1 values, 0.5 means center to pixel values)			
 			Rect newRect=new Rect(rects[i].x*width,rects[i].y*height,atlasEntries[i].canvasRect.width,atlasEntries[i].canvasRect.height);			
 			atlasEntries[i].canvasRect=newRect;			
-			Debug.Log("rects["+i+"]="+newRect);
 		}		 
 	}
 	

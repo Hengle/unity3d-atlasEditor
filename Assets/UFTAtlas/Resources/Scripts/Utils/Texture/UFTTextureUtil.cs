@@ -129,8 +129,7 @@ public class UFTTextureUtil : MonoBehaviour {
 		
 		byte[] bytes = texture.EncodeToPNG();
 		if (bytes != null){
-			File.WriteAllBytes(assetPath, bytes);
-			Debug.Log("im here"+assetPath);	
+			File.WriteAllBytes(assetPath, bytes);			
 		}
 		//Object.DestroyImmediate((Object) texture);
 		AssetDatabase.ImportAsset(assetPath);

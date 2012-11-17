@@ -176,7 +176,18 @@ public class UFTAtlasEntry:ScriptableObject{
 	}
 	
 	public void readPropertiesFromMetadata(UFTAtlasEntryMetadata metadata){
-		
+		Texture2D texture=(Texture2D) AssetDatabase.LoadAssetAtPath(metadata.assetPath,typeof(Texture2D));	
+		if (texture==null){
+			throw new TextureDoesNotExistsException(metadata.assetPath);	
+		} else {
+			this.texture=texture;
+			this.canvasRect=metadata.pixelRect;
+			this.name=metadata.name;
+			this.isTrimmed=metadata.isTrimmed;
+			if (this.isTrimmed){
+				this.texture=UFTTextureUtil.trimTextureAlpha(this.texture);					
+			}						
+		}
 	}
 	
 }

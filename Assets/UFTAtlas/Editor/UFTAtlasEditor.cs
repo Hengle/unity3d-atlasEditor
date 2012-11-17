@@ -35,9 +35,21 @@ public class UFTAtlasEditor : EditorWindow {
     }
 	
 	void OnEnable(){
-		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
-		readWidthHeightFromEditorPrefs();
+		initOnNewParameters ();
 		
+		registerListeners ();
+		
+	}
+
+	public void initOnNewParameters ()
+	{
+		atlasMetadata=null;
+		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
+		readWidthHeightFromEditorPrefs();		
+	}
+
+	public void registerListeners ()
+	{
 		UFTAtlasEditorEventManager.onNeedToRepaint+=onNeedToRepaint;
 		UFTAtlasEditorEventManager.onAtlasChange+=onAtlasChange;		
 		UFTAtlasEditorEventManager.onAddNewEntry+=onAddNewEntry;
@@ -47,10 +59,6 @@ public class UFTAtlasEditor : EditorWindow {
 		UFTAtlasEditorEventManager.onTextureSizeChanged+=onTextureSizeChanged;
 		UFTAtlasEditorEventManager.onAtlasSizeChanged+=onAtlasSizeChanged;
 		UFTAtlasEditorEventManager.onAtlasMetadataObjectChanged+=onAtlasMetadataObjectChanged;
-		foreach (UFTAtlasEntry uftAtlasEntry in uftAtlas.atlasEntries) {
-			Undo.RegisterUndo(uftAtlas,"UFTAtlasEntry"+uftAtlasEntry.id);	
-		}
-		
 	}
 	
 	
@@ -65,11 +73,15 @@ public class UFTAtlasEditor : EditorWindow {
 	public void readWidthHeightFromEditorPrefs(){
 		int width= EditorPrefs.GetInt(EDITOR_PREFS_KEY_ATLAS_WIDHT,DEFAULT_ATLAS_WIDTH);
 		int height= EditorPrefs.GetInt(EDITOR_PREFS_KEY_ATLAS_HEIGHT,DEFAULT_ATLAS_HEIGHT);
+		sendEventAtlasWidthHeightChanged (width, height);		
+	}
+
+	public void sendEventAtlasWidthHeightChanged (int width, int height)
+	{
 		uftAtlas.atlasWidth= (UFTAtlasSize) width;
 		uftAtlas.atlasHeight=(UFTAtlasSize) height;
 		if (UFTAtlasEditorEventManager.onAtlasSizeChanged!=null)
 						UFTAtlasEditorEventManager.onAtlasSizeChanged(width,height);
-		
 	}
 
 	
@@ -107,9 +119,7 @@ public class UFTAtlasEditor : EditorWindow {
 
 	void registerSnapshotForEntry (UFTAtlasEntry uftAtlasEntry)
 	{
-		Undo.SetSnapshotTarget(uftAtlas,"atlas");
-		Undo.CreateSnapshot();
-		Undo.RegisterSnapshot();
+		registerAtlasSnapshot ();
 		
 		Undo.SetSnapshotTarget(uftAtlasEntry,"stop dragging uftAtlasEntry id="+uftAtlasEntry.id);
 		Undo.CreateSnapshot();
@@ -118,17 +128,24 @@ public class UFTAtlasEditor : EditorWindow {
 	
 	
 	public void onAtlasMetadataObjectChanged (UFTAtlasMetadata atlasMetadata)
+	{		
+		registerAtlasSnapshot ();
+		initOnNewParameters();
+		if (atlasMetadata!=null){
+			//create UFTAtlas from metadata.
+			uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
+			uftAtlas.readPropertiesFromMetadata(atlasMetadata);
+			sendEventAtlasWidthHeightChanged((int)uftAtlas.atlasWidth, (int)uftAtlas.atlasHeight);			
+		}
+		
+	}
+
+	public void registerAtlasSnapshot ()
 	{
 		//Register Undo for the previous state	
 		Undo.SetSnapshotTarget(uftAtlas,"atlas");
 		Undo.CreateSnapshot();
 		Undo.RegisterSnapshot();
-		
-		
-		//create UFTAtlas from metadata.
-		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
-		uftAtlas.readEntriesFromMetadata(atlasMetadata);
-		
 	}
 	
 		
@@ -160,15 +177,13 @@ public class UFTAtlasEditor : EditorWindow {
 				EditorGUILayout.Separator();		
 				EditorGUILayout.LabelField("Atlas:");
 				UFTAtlasMetadata newMeta= (UFTAtlasMetadata) EditorGUILayout.ObjectField((Object)atlasMetadata,typeof(UFTAtlasMetadata),false);
-				if (newMeta!=atlasMetadata){
-					if (uftAtlas.atlasEntries.Count>0){
-						if (uftAtlas.atlasEntries.Count==0 || EditorUtility.DisplayDialog("This action will remove all existing textures on your atlas\n Do you want to proceed?")){
-							//check if we have already object on scene, if yes, ask do we need to proceed							
-							if (UFTAtlasEditorEventManager.onAtlasMetadataObjectChanged!=null)
-								UFTAtlasEditorEventManager.onAtlasMetadataObjectChanged(newMeta);
-							atlasMetadata=newMeta;
-						}				
-					}					
+				if (newMeta!=atlasMetadata){					
+					if (uftAtlas.atlasEntries.Count==0 || (uftAtlas.atlasEntries.Count>0 && EditorUtility.DisplayDialog("This action will remove all existing textures on your atlas", "Do you want to proceed?","Proceed","Cancel"))){
+						if (UFTAtlasEditorEventManager.onAtlasMetadataObjectChanged!=null)
+							UFTAtlasEditorEventManager.onAtlasMetadataObjectChanged(newMeta);
+						atlasMetadata=newMeta;
+					}				
+				
 				}
 		
 				EditorGUILayout.BeginHorizontal();
@@ -285,8 +300,8 @@ public class UFTAtlasEditor : EditorWindow {
 
 	void onClickNew ()
 	{
-		EditorUtility.UnloadUnusedAssets();
-		throw new System.NotImplementedException ();
+		registerAtlasSnapshot ();		
+		initOnNewParameters();
 	}
 
 	

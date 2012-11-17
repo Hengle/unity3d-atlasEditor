@@ -31,31 +31,31 @@ public class UFTAtlasEntryMetadata{
 
 	
 	
-	public string AssetPath {
+	public string assetPath {
 		get {
 			return this._assetPath;
 		}		
 	}
 
-	public bool IsTrimmed {
+	public bool isTrimmed {
 		get {
 			return this._isTrimmed;
 		}		
 	}
 
-	public string Name {
+	public string name {
 		get {
 			return this._name;
 		}		
 	}
 
-	public Rect PixelRect {
+	public Rect pixelRect {
 		get {
 			return this._pixelRect;
 		}		
 	}
 
-	public Rect UvRect {
+	public Rect uvRect {
 		get {
 			return this._uvRect;
 		}		
