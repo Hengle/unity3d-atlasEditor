@@ -17,7 +17,7 @@ public class UFTAtlasEntry:ScriptableObject{
 	public string assetPath;
 	
 	[SerializeField]
-	public string name;
+	public string textureName;
 	
 	
 	[SerializeField]

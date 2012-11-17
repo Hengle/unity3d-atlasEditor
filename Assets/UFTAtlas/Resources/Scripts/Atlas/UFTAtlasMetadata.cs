@@ -68,4 +68,7 @@ public class UFTAtlasMetadata : ScriptableObject {
 	
 	public UFTAtlasEntryMetadata[] entries;
 	
+	public static UFTAtlasMetadata Instantiate(){
+		return new UFTAtlasMetadata();	
+	}
 }

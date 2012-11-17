@@ -75,14 +75,23 @@ public class UFTTextureUtil : MonoBehaviour {
 	}
 	
 	
-	public static void saveTextureToFile(Texture2D texture, string fileName){
-			
-		string directoryPath=Application.dataPath +"/data";
-		byte[] byteArray=texture.EncodeToPNG();	
-		if (!Directory.Exists(directoryPath))
-			Directory.CreateDirectory(directoryPath);
+	//this function create folder if no exists and store texture to the file
+	public static void saveTextureToFile(Texture2D texture, string folderName, string fileName){
 		
-		FileStream file=File.Open(directoryPath+"/" +fileName + ".png",FileMode.Create);
+		if (!Directory.Exists(folderName))
+			Directory.CreateDirectory(folderName);
+		
+		
+		
+		string filePath=folderName+"/" +fileName + ".png";
+		
+		saveTextureToFile (texture, filePath);
+	}
+
+	public static void saveTextureToFile (Texture2D texture, string filePath)
+	{
+		FileStream file=File.Open(filePath,FileMode.Create);
+		byte[] byteArray=texture.EncodeToPNG();	
 		BinaryWriter bw=new BinaryWriter(file);
 		bw.Write(byteArray);
 		file.Close();

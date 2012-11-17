@@ -103,7 +103,7 @@ public class UFTAtlas : ScriptableObject {
 		Rect rect=new Rect(0,0,texture.width,texture.height);
 		UFTAtlasEntry uftAtlasEntry=UFTAtlasEntry.CreateInstance<UFTAtlasEntry>();
 		uftAtlasEntry.assetPath=assetPath;
-		uftAtlasEntry.name=name;		
+		uftAtlasEntry.textureName=name;		
 		uftAtlasEntry.canvasRect=rect;
 		uftAtlasEntry.texture=texture;
 		uftAtlasEntry.uftAtlas=this;
@@ -206,14 +206,14 @@ public class UFTAtlas : ScriptableObject {
 	public UFTAtlasMetadata getAtlasMetadata(string name){
 		List<UFTAtlasEntryMetadata> entryMeta=atlasEntries.ConvertAll(new Converter<UFTAtlasEntry,UFTAtlasEntryMetadata>(entryToEntryMetaConverter));
 		
-		UFTAtlasMetadata atlasMetadata=new UFTAtlasMetadata();
+		UFTAtlasMetadata atlasMetadata=UFTAtlasMetadata.Instantiate();
 		atlasMetadata.entries=entryMeta.ToArray();		
 		return atlasMetadata;
 	}
 	
 		
 	private static UFTAtlasEntryMetadata entryToEntryMetaConverter(UFTAtlasEntry entry){
-		UFTAtlasEntryMetadata uftMeta=new UFTAtlasEntryMetadata(entry.name,entry.assetPath,entry.canvasRect,entry.uvRect, entry.isTrimmed);
+		UFTAtlasEntryMetadata uftMeta=new UFTAtlasEntryMetadata(entry.textureName,entry.assetPath,entry.canvasRect,entry.uvRect, entry.isTrimmed);
 		return uftMeta;
 	}
 			
@@ -240,9 +240,34 @@ public class UFTAtlas : ScriptableObject {
 			atlasEntries[i].canvasRect=newRect;
 			
 			Debug.Log("rects["+i+"]="+newRect);
-		}
-		
-		
-		
+		}		 
 	}
+	
+	
+	// save all entries textures to one Texture2d, this function doesn't store result texture to asset or to the file
+	public Texture2D buildAtlasTexture2d(){
+		Texture2D atlasTexture=new Texture2D((int)atlasWidth,(int)atlasHeight);
+		Color32[] atlasColors=atlasTexture.GetPixels32();
+		Debug.Log("width="+atlasWidth);
+		
+		foreach (UFTAtlasEntry entry in atlasEntries){
+			Texture2D entryTexture=entry.texture;
+			Color32[] entryColors=entryTexture.GetPixels32();
+			
+			int rowPosition=0;			
+			int offset=(int)(atlasColors.Length-((entry.canvasRect.y+entry.canvasRect.height) * (int)atlasWidth)+entry.canvasRect.x);
+			for (int i = 0; i < entryColors.Length; i++) {
+				if (rowPosition==entry.canvasRect.width){		
+					rowPosition=0;	
+					offset=offset+ (int)atlasWidth;					
+				}				
+				atlasColors[offset+rowPosition]=entryColors[i];
+				rowPosition++;
+			}			
+		}	
+		atlasTexture.SetPixels32(atlasColors);
+		atlasTexture.Apply();
+		return atlasTexture;
+	}
+	
 }

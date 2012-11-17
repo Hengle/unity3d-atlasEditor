@@ -122,7 +122,6 @@ public class UFTAtlasEditor : EditorWindow {
 					if (GUILayout.Button("save"))
 						onClickSave();
 				EditorGUILayout.EndHorizontal();
-		
 				UFTAtlasSize newWidth = (UFTAtlasSize) EditorGUILayout.EnumPopup("width",uftAtlas.atlasWidth);
 				UFTAtlasSize newHeight = (UFTAtlasSize) EditorGUILayout.EnumPopup("height",uftAtlas.atlasHeight);	
 				
@@ -224,8 +223,11 @@ public class UFTAtlasEditor : EditorWindow {
 	void onClickSave ()
 	{
 		UFTAtlasMetadata metadata=uftAtlas.getAtlasMetadata("testName");
-		AssetDatabase.CreateAsset(metadata,"Assets/testName.asset");
+		AssetDatabase.CreateAsset(metadata,"Assets/atlasMeta.asset");
 		
+		Texture2D atlasTexture=uftAtlas.buildAtlasTexture2d();
+		AssetDatabase.CreateAsset(atlasTexture,"Assets/testName.asset");
+		UFTTextureUtil.saveTextureToFile(atlasTexture,"Assets/testName.png");
 	}
 
 	void onClickNew ()
@@ -245,7 +247,7 @@ public class UFTAtlasEditor : EditorWindow {
 	
 	// this function used as converter in OnGUI to show list of the entry names
 	private static string uftAtlasEntryToString(UFTAtlasEntry uftAtlasEntry){
-		return uftAtlasEntry.name;
+		return uftAtlasEntry.textureName;
 	}
 	
 }
