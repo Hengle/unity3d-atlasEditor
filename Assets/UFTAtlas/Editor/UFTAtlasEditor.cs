@@ -187,9 +187,12 @@ public class UFTAtlasEditor : EditorWindow {
 				}
 		
 				EditorGUILayout.BeginHorizontal();
-		
-					if (GUILayout.Button("new"))
-						onClickNew();		
+					
+					if (GUILayout.Button("new")){
+						if (uftAtlas.atlasEntries.Count==0 || (uftAtlas.atlasEntries.Count>0 && EditorUtility.DisplayDialog("This action will remove all existing textures on your atlas", "Do you want to proceed?","Proceed","Cancel"))){
+							onClickNew();		
+						}
+					}
 					if (GUILayout.Button("save"))
 						onClickSave();
 				EditorGUILayout.EndHorizontal();
