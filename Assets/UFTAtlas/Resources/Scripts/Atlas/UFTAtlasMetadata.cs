@@ -65,10 +65,11 @@ public class UFTAtlasEntryMetadata{
 
 
 public class UFTAtlasMetadata : ScriptableObject {
-	
+	[SerializeField]
 	public UFTAtlasEntryMetadata[] entries;
 	
-	public static UFTAtlasMetadata Instantiate(){
-		return new UFTAtlasMetadata();	
-	}
+	[SerializeField]
+	public Texture2D texture;
+	
+	
 }

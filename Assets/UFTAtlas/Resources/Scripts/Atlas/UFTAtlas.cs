@@ -8,10 +8,10 @@ using System;
 public class UFTAtlas : ScriptableObject {
 
 	[SerializeField]
-	public UFTAtlasSize atlasWidth=UFTAtlasSize._512;
+	public UFTAtlasSize atlasWidth;
 	
 	[SerializeField]
-	public UFTAtlasSize atlasHeight=UFTAtlasSize._512;
+	public UFTAtlasSize atlasHeight;
 	
 	[SerializeField]
 	public List<UFTAtlasEntry> atlasEntries;	
@@ -202,12 +202,17 @@ public class UFTAtlas : ScriptableObject {
 	
 	
 	
-	
-	public UFTAtlasMetadata getAtlasMetadata(string name){
+	//this function build atlas texture, create atlas metadata and return it	
+	public UFTAtlasMetadata getAtlasMetadata(string assetPath){
 		List<UFTAtlasEntryMetadata> entryMeta=atlasEntries.ConvertAll(new Converter<UFTAtlasEntry,UFTAtlasEntryMetadata>(entryToEntryMetaConverter));
+		Texture2D texture=buildAtlasTexture2d();
+		texture=UFTTextureUtil.saveTexture2DToAssets(texture, assetPath);		
 		
-		UFTAtlasMetadata atlasMetadata=UFTAtlasMetadata.Instantiate();
+		UFTAtlasMetadata atlasMetadata=UFTAtlasMetadata.CreateInstance<UFTAtlasMetadata>();
 		atlasMetadata.entries=entryMeta.ToArray();		
+		atlasMetadata.texture=texture;
+		
+		
 		return atlasMetadata;
 	}
 	
@@ -231,14 +236,9 @@ public class UFTAtlas : ScriptableObject {
 		Rect[] rects=tmpTexture.PackTextures(entries,borderSize);
 		
 		for (int i = 0; i < rects.Length; i++) {
-			//convert rect from Atlas(which has 0->1 values, 0.5 means center to pixel values)
-			
-			
-			Debug.Log("original rect="+atlasEntries[i].canvasRect);
-			Rect newRect=new Rect(rects[i].x*width,rects[i].y*height,atlasEntries[i].canvasRect.width,atlasEntries[i].canvasRect.height);
-			
-			atlasEntries[i].canvasRect=newRect;
-			
+			//convert rect from Atlas(which has 0->1 values, 0.5 means center to pixel values)			
+			Rect newRect=new Rect(rects[i].x*width,rects[i].y*height,atlasEntries[i].canvasRect.width,atlasEntries[i].canvasRect.height);			
+			atlasEntries[i].canvasRect=newRect;			
 			Debug.Log("rects["+i+"]="+newRect);
 		}		 
 	}

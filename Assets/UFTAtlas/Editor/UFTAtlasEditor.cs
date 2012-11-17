@@ -21,29 +21,58 @@ public class UFTAtlasEditor : EditorWindow {
 	public Vector2 atlasTexturesScrollPosition=Vector2.zero;
 	
 	
+	private static string EDITOR_PREFS_KEY_ATLAS_WIDHT="uft.atlasEditor.width";
+	private static string EDITOR_PREFS_KEY_ATLAS_HEIGHT="uft.atlasEditor.height";
+	public static int DEFAULT_ATLAS_WIDTH=512;
+	public static int DEFAULT_ATLAS_HEIGHT=512;
+	
+	
 	
 	[MenuItem ("Window/Free Atlas Editor")]
     static void ShowWindow () {    		
-		EditorWindow.GetWindow <UFTAtlasEditor>();				
+		EditorWindow.GetWindow <UFTAtlasEditor>("Atlas Editor",typeof(SceneView));				
     }
 	
 	void OnEnable(){
 		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
+		readWidthHeightFromEditorPrefs();
+		
 		UFTAtlasEditorEventManager.onNeedToRepaint+=onNeedToRepaint;
 		UFTAtlasEditorEventManager.onAtlasChange+=onAtlasChange;		
 		UFTAtlasEditorEventManager.onAddNewEntry+=onAddNewEntry;
 		UFTAtlasEditorEventManager.onRemoveEntry+=onRemoveEntry;
 		UFTAtlasEditorEventManager.onStopDragging+=onStopDragging;
-		UFTAtlasEditorEventManager.onStartDragging+=onStartDragging;
+		UFTAtlasEditorEventManager.onStartDragging+=onStartDragging; 
 		UFTAtlasEditorEventManager.onTextureSizeChanged+=onTextureSizeChanged;
+		UFTAtlasEditorEventManager.onAtlasSizeChanged+=onAtlasSizeChanged;
+		
 		foreach (UFTAtlasEntry uftAtlasEntry in uftAtlas.atlasEntries) {
 			Undo.RegisterUndo(uftAtlas,"UFTAtlasEntry"+uftAtlasEntry.id);	
 		}
 		
+	}
+	
+	
 
+	public void onAtlasSizeChanged (int width, int height)
+	{
+		EditorPrefs.SetInt(EDITOR_PREFS_KEY_ATLAS_WIDHT,width);
+		EditorPrefs.SetInt(EDITOR_PREFS_KEY_ATLAS_HEIGHT,height);
+	}
+	
+	
+	public void readWidthHeightFromEditorPrefs(){
+		int width= EditorPrefs.GetInt(EDITOR_PREFS_KEY_ATLAS_WIDHT,DEFAULT_ATLAS_WIDTH);
+		int height= EditorPrefs.GetInt(EDITOR_PREFS_KEY_ATLAS_HEIGHT,DEFAULT_ATLAS_HEIGHT);
+		uftAtlas.atlasWidth= (UFTAtlasSize) width;
+		uftAtlas.atlasHeight=(UFTAtlasSize) height;
+		if (UFTAtlasEditorEventManager.onAtlasSizeChanged!=null)
+						UFTAtlasEditorEventManager.onAtlasSizeChanged(width,height);
 		
 	}
 
+	
+	
 	public void onAddNewEntry (UFTAtlasEntry uftAtlasEntry)
 	{		
 		Undo.RegisterUndo(uftAtlasEntry,"UFTAtlasEntry" + uftAtlasEntry.id);
@@ -51,7 +80,7 @@ public class UFTAtlasEditor : EditorWindow {
 
 	public void onStopDragging (UFTAtlasEntry uftAtlasEntry)
 	{
-		//Undo.SetSnapshotTarget(uftAtlasEntry,"stop dragging uftAtlasEntry id="+uftAtlasEntry.id);
+		//
 	}
 
 	public void onStartDragging (UFTAtlasEntry uftAtlasEntry)
@@ -225,9 +254,6 @@ public class UFTAtlasEditor : EditorWindow {
 		UFTAtlasMetadata metadata=uftAtlas.getAtlasMetadata("testName");
 		AssetDatabase.CreateAsset(metadata,"Assets/atlasMeta.asset");
 		
-		Texture2D atlasTexture=uftAtlas.buildAtlasTexture2d();
-		AssetDatabase.CreateAsset(atlasTexture,"Assets/testName.asset");
-		UFTTextureUtil.saveTextureToFile(atlasTexture,"Assets/testName.png");
 	}
 
 	void onClickNew ()

@@ -112,33 +112,39 @@ public class UFTTextureUtil : MonoBehaviour {
 			texture.SetPixels(c);
 			texture.Apply();
 			
-			
-			
-			
 			//save to files an then import
-			 byte[] bytes = texture.EncodeToPNG();
-		    if (bytes != null)
-		      File.WriteAllBytes(assetPath, bytes);
-		    Object.DestroyImmediate((Object) texture);
-		    AssetDatabase.ImportAsset(assetPath);
-		    TextureImporter textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-		    textureImporter.textureFormat=TextureImporterFormat.ARGB32;
-		    textureImporter.textureType=TextureImporterType.Advanced;
-			textureImporter.mipmapEnabled=false;
-			textureImporter.wrapMode=TextureWrapMode.Clamp;
-			textureImporter.filterMode=FilterMode.Point;
-			textureImporter.npotScale=TextureImporterNPOTScale.None;
-		    AssetDatabase.ImportAsset(assetPath);
-		    texture= (Texture2D) AssetDatabase.LoadAssetAtPath(assetPath, typeof (Texture2D));			
-			
-			
-			
-			
+			texture=saveTexture2DToAssets ( texture, assetPath);			
 			
 		}
 		return texture;
 	}
-	
+
+	public static Texture2D saveTexture2DToAssets (Texture2D texture, string assetPath)
+	{
+		
+		if (!assetPath.StartsWith("Assets/"))
+			assetPath="Assets/"+assetPath;
+		if (!assetPath.EndsWith("png"))
+			assetPath=assetPath+".png";
+		
+		byte[] bytes = texture.EncodeToPNG();
+		if (bytes != null){
+			File.WriteAllBytes(assetPath, bytes);
+			Debug.Log("im here"+assetPath);	
+		}
+		//Object.DestroyImmediate((Object) texture);
+		AssetDatabase.ImportAsset(assetPath);
+		TextureImporter textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+		textureImporter.textureFormat=TextureImporterFormat.ARGB32;
+		textureImporter.textureType=TextureImporterType.Advanced;
+		textureImporter.mipmapEnabled=false;
+		textureImporter.wrapMode=TextureWrapMode.Clamp;
+		textureImporter.filterMode=FilterMode.Point;
+		textureImporter.npotScale=TextureImporterNPOTScale.None;
+		AssetDatabase.ImportAsset(assetPath);
+		texture= (Texture2D) AssetDatabase.LoadAssetAtPath(assetPath, typeof (Texture2D));
+		return texture;
+	}
 	
 	
 	public static Texture2D getCheckerBoardTile(){
