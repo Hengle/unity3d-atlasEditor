@@ -10,7 +10,7 @@ public delegate void AtlasChange();
 public delegate void AddNewEntry(UFTAtlasEntry uftAtlasEntry);
 public delegate void RemoveEntry(UFTAtlasEntry uftAtlasEntry);
 public delegate void TextureSizeChanged(UFTAtlasEntry uftAtlasEntry);
-
+public delegate void AtlasMetadataObjectChanged(UFTAtlasMetadata atlasMetadata);
 
 public class UFTAtlasEditorEventManager {
 	public static DragInProgress onDragInProgress;
@@ -22,4 +22,5 @@ public class UFTAtlasEditorEventManager {
 	public static AddNewEntry onAddNewEntry;
 	public static RemoveEntry onRemoveEntry;
 	public static TextureSizeChanged onTextureSizeChanged;
+	public static AtlasMetadataObjectChanged onAtlasMetadataObjectChanged;
 }

@@ -96,6 +96,16 @@ public class UFTAtlas : ScriptableObject {
 		
 	}
 	
+	public void readPropertiesFromMetadata(UFTAtlasMetadata atlasMetadata){
+		atlasWidth=atlasMetadata.texture.width;
+		atlasHeight=atlasMetadata.texture.height;
+		List<UFTAtlasEntry> entries=new List<UFTAtlasEntry>();
+		foreach (UFTAtlasEntryMetadata meta in  atlasMetadata.entries){
+			
+		
+		}		
+	}
+	
 	
 	public void addNewEntry(Texture2D texture, string assetPath){		
 		string name=assetPath.Substring(assetPath.LastIndexOf('/')+1);

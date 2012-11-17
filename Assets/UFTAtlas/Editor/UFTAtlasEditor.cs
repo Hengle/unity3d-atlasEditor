@@ -21,6 +21,7 @@ public class UFTAtlasEditor : EditorWindow {
 	public Vector2 atlasTexturesScrollPosition=Vector2.zero;
 	
 	
+	UFTAtlasMetadata atlasMetadata;
 	private static string EDITOR_PREFS_KEY_ATLAS_WIDHT="uft.atlasEditor.width";
 	private static string EDITOR_PREFS_KEY_ATLAS_HEIGHT="uft.atlasEditor.height";
 	public static int DEFAULT_ATLAS_WIDTH=512;
@@ -45,7 +46,7 @@ public class UFTAtlasEditor : EditorWindow {
 		UFTAtlasEditorEventManager.onStartDragging+=onStartDragging; 
 		UFTAtlasEditorEventManager.onTextureSizeChanged+=onTextureSizeChanged;
 		UFTAtlasEditorEventManager.onAtlasSizeChanged+=onAtlasSizeChanged;
-		
+		UFTAtlasEditorEventManager.onAtlasMetadataObjectChanged+=onAtlasMetadataObjectChanged;
 		foreach (UFTAtlasEntry uftAtlasEntry in uftAtlas.atlasEntries) {
 			Undo.RegisterUndo(uftAtlas,"UFTAtlasEntry"+uftAtlasEntry.id);	
 		}
@@ -115,6 +116,21 @@ public class UFTAtlasEditor : EditorWindow {
 		Undo.RegisterSnapshot();
 	}
 	
+	
+	public void onAtlasMetadataObjectChanged (UFTAtlasMetadata atlasMetadata)
+	{
+		//Register Undo for the previous state	
+		Undo.SetSnapshotTarget(uftAtlas,"atlas");
+		Undo.CreateSnapshot();
+		Undo.RegisterSnapshot();
+		
+		
+		//create UFTAtlas from metadata.
+		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
+		uftAtlas.readEntriesFromMetadata(atlasMetadata);
+		
+	}
+	
 		
 	void Update(){
 		Repaint();	
@@ -143,7 +159,18 @@ public class UFTAtlasEditor : EditorWindow {
 			EditorGUILayout.BeginVertical (new GUILayoutOption[]{GUILayout.Width(250f)});
 				EditorGUILayout.Separator();		
 				EditorGUILayout.LabelField("Atlas:");
-				EditorGUILayout.TextField("name","");
+				UFTAtlasMetadata newMeta= (UFTAtlasMetadata) EditorGUILayout.ObjectField((Object)atlasMetadata,typeof(UFTAtlasMetadata),false);
+				if (newMeta!=atlasMetadata){
+					if (uftAtlas.atlasEntries.Count>0){
+						if (uftAtlas.atlasEntries.Count==0 || EditorUtility.DisplayDialog("This action will remove all existing textures on your atlas\n Do you want to proceed?")){
+							//check if we have already object on scene, if yes, ask do we need to proceed							
+							if (UFTAtlasEditorEventManager.onAtlasMetadataObjectChanged!=null)
+								UFTAtlasEditorEventManager.onAtlasMetadataObjectChanged(newMeta);
+							atlasMetadata=newMeta;
+						}				
+					}					
+				}
+		
 				EditorGUILayout.BeginHorizontal();
 		
 					if (GUILayout.Button("new"))
@@ -258,6 +285,7 @@ public class UFTAtlasEditor : EditorWindow {
 
 	void onClickNew ()
 	{
+		EditorUtility.UnloadUnusedAssets();
 		throw new System.NotImplementedException ();
 	}
 

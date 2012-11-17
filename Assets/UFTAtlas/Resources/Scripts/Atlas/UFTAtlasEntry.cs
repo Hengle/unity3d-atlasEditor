@@ -175,4 +175,8 @@ public class UFTAtlasEntry:ScriptableObject{
 		controlBlinkTime=null;
 	}
 	
+	public void readPropertiesFromMetadata(UFTAtlasEntryMetadata metadata){
+		
+	}
+	
 }
