@@ -207,4 +207,8 @@ public class UFTAtlasEntry:ScriptableObject{
 		}
 	}
 	
+	public UFTAtlasEntryMetadata getMetadata(){
+		return new UFTAtlasEntryMetadata(name,assetPath,canvasRect,uvRect,isTrimmed);	
+	}
+	
 }

@@ -8,16 +8,49 @@ using System;
 public class UFTAtlas : ScriptableObject {
 
 	[SerializeField]
-	public UFTAtlasSize atlasWidth;
+	private UFTAtlasSize _atlasWidth;
+
+	public UFTAtlasSize atlasWidth {
+		get {
+			return this._atlasWidth;
+		}
+		set {
+			_atlasWidth = value;
+			sendEventAtlasWidthHeightChanged();
+		}
+	}	
+	
 	
 	[SerializeField]
-	public UFTAtlasSize atlasHeight;
-	
+	private UFTAtlasSize _atlasHeight;
+
+	public UFTAtlasSize atlasHeight {
+		get {
+			return this._atlasHeight;
+		}
+		set {
+			_atlasHeight = value;
+			sendEventAtlasWidthHeightChanged();
+		}
+	}	
 	[SerializeField]
 	public List<UFTAtlasEntry> atlasEntries;	
 	
 	[SerializeField]
 	public int borderSize=2;
+	
+	[SerializeField]
+	private string _atlasName;
+
+	public string atlasName {
+		get {
+			return this._atlasName;
+		}
+		set {
+			_atlasName = value;
+			sendEventAtlasChanged();
+		}
+	}	
 	
 	Texture2D atlasCanvasBG;
 	
@@ -27,12 +60,6 @@ public class UFTAtlas : ScriptableObject {
 	private Rect atlasBGTexCoord=new Rect(0,0,1,1);
 	
 	
-	
-	
-	
-	
-
-
 	private UFTAtlasEntry clickedTextureOnCanvas;
 	private bool recreateTexturesPositions=false;
 	
@@ -41,11 +68,12 @@ public class UFTAtlas : ScriptableObject {
 		hideFlags = HideFlags.HideAndDontSave;
 		initParams ();	
 	}
-	//uncoment it if you will have a problem with repaint
-	/*
 	
-	*/
-	
+	public void sendEventAtlasWidthHeightChanged ()
+	{		
+		if (UFTAtlasEditorEventManager.onAtlasSizeChanged!=null)
+						UFTAtlasEditorEventManager.onAtlasSizeChanged((int)atlasWidth,(int)atlasHeight);		
+	}
 	
 	
 	public void OnGUI(){
@@ -111,6 +139,7 @@ public class UFTAtlas : ScriptableObject {
 			}				
 		}		
 		this.atlasEntries=entries;
+		this.atlasName=atlasMetadata.atlasName;
 	}
 	
 	
@@ -213,23 +242,23 @@ public class UFTAtlas : ScriptableObject {
 	
 	
 	//this function build atlas texture, create atlas metadata and return it	
-	public UFTAtlasMetadata getAtlasMetadata(string assetPath){
+	public UFTAtlasMetadata saveAtlasTextureAndGetMetadata(string assetPath){
 		List<UFTAtlasEntryMetadata> entryMeta=atlasEntries.ConvertAll(new Converter<UFTAtlasEntry,UFTAtlasEntryMetadata>(entryToEntryMetaConverter));
+		
 		Texture2D texture=buildAtlasTexture2d();
 		texture=UFTTextureUtil.saveTexture2DToAssets(texture, assetPath);		
 		
 		UFTAtlasMetadata atlasMetadata=UFTAtlasMetadata.CreateInstance<UFTAtlasMetadata>();
 		atlasMetadata.entries=entryMeta.ToArray();		
 		atlasMetadata.texture=texture;
-		
+		atlasMetadata.atlasName=atlasName;
 		
 		return atlasMetadata;
 	}
 	
 		
-	private static UFTAtlasEntryMetadata entryToEntryMetaConverter(UFTAtlasEntry entry){
-		UFTAtlasEntryMetadata uftMeta=new UFTAtlasEntryMetadata(entry.textureName,entry.assetPath,entry.canvasRect,entry.uvRect, entry.isTrimmed);
-		return uftMeta;
+	private static UFTAtlasEntryMetadata entryToEntryMetaConverter(UFTAtlasEntry entry){		
+		return entry.getMetadata();
 	}
 			
 	
@@ -253,8 +282,6 @@ public class UFTAtlas : ScriptableObject {
 	public Texture2D buildAtlasTexture2d(){
 		Texture2D atlasTexture=new Texture2D((int)atlasWidth,(int)atlasHeight);
 		Color32[] atlasColors=atlasTexture.GetPixels32();
-		Debug.Log("width="+atlasWidth);
-		
 		foreach (UFTAtlasEntry entry in atlasEntries){
 			Texture2D entryTexture=entry.texture;
 			Color32[] entryColors=entryTexture.GetPixels32();

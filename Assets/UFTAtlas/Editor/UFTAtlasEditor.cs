@@ -19,11 +19,14 @@ public class UFTAtlasEditor : EditorWindow {
 	private bool isAtlasDirty=false;
 	public Vector2 scrollPosition = Vector2.zero;
 	public Vector2 atlasTexturesScrollPosition=Vector2.zero;
+	public string ATLAS_FILE_MASK="atlas_";
 	
 	
 	UFTAtlasMetadata atlasMetadata;
 	private static string EDITOR_PREFS_KEY_ATLAS_WIDHT="uft.atlasEditor.width";
 	private static string EDITOR_PREFS_KEY_ATLAS_HEIGHT="uft.atlasEditor.height";
+	
+	
 	public static int DEFAULT_ATLAS_WIDTH=512;
 	public static int DEFAULT_ATLAS_HEIGHT=512;
 	
@@ -45,6 +48,9 @@ public class UFTAtlasEditor : EditorWindow {
 	{
 		atlasMetadata=null;
 		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
+		//get free name
+		string atlasName=UFTFileUtil.getFileName(ATLAS_FILE_MASK);
+		uftAtlas.atlasName=atlasName;		
 		readWidthHeightFromEditorPrefs();		
 	}
 
@@ -73,17 +79,11 @@ public class UFTAtlasEditor : EditorWindow {
 	public void readWidthHeightFromEditorPrefs(){
 		int width= EditorPrefs.GetInt(EDITOR_PREFS_KEY_ATLAS_WIDHT,DEFAULT_ATLAS_WIDTH);
 		int height= EditorPrefs.GetInt(EDITOR_PREFS_KEY_ATLAS_HEIGHT,DEFAULT_ATLAS_HEIGHT);
-		sendEventAtlasWidthHeightChanged (width, height);		
+		uftAtlas.atlasWidth=(UFTAtlasSize) width;
+		uftAtlas.atlasHeight=(UFTAtlasSize)height;		
 	}
 
-	public void sendEventAtlasWidthHeightChanged (int width, int height)
-	{
-		uftAtlas.atlasWidth= (UFTAtlasSize) width;
-		uftAtlas.atlasHeight=(UFTAtlasSize) height;
-		if (UFTAtlasEditorEventManager.onAtlasSizeChanged!=null)
-						UFTAtlasEditorEventManager.onAtlasSizeChanged(width,height);
-	}
-
+	
 	
 	
 	public void onAddNewEntry (UFTAtlasEntry uftAtlasEntry)
@@ -134,8 +134,7 @@ public class UFTAtlasEditor : EditorWindow {
 		if (atlasMetadata!=null){
 			//create UFTAtlas from metadata.
 			uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
-			uftAtlas.readPropertiesFromMetadata(atlasMetadata);
-			sendEventAtlasWidthHeightChanged((int)uftAtlas.atlasWidth, (int)uftAtlas.atlasHeight);			
+			uftAtlas.readPropertiesFromMetadata(atlasMetadata);			
 		}
 		
 	}
@@ -173,9 +172,14 @@ public class UFTAtlasEditor : EditorWindow {
 		EditorGUILayout.Separator();
 		EditorGUILayout.BeginHorizontal();
 			
-			EditorGUILayout.BeginVertical (new GUILayoutOption[]{GUILayout.Width(250f)});
+			EditorGUILayout.BeginVertical (new GUILayoutOption[]{GUILayout.Width(200f)});
 				EditorGUILayout.Separator();		
 				EditorGUILayout.LabelField("Atlas:");
+				string newName=EditorGUILayout.TextField("name",uftAtlas.atlasName);
+				if (newName!=uftAtlas.atlasName){
+					uftAtlas.atlasName=newName;
+				}
+		
 				UFTAtlasMetadata newMeta= (UFTAtlasMetadata) EditorGUILayout.ObjectField((Object)atlasMetadata,typeof(UFTAtlasMetadata),false);
 				if (newMeta!=atlasMetadata){					
 					if (uftAtlas.atlasEntries.Count==0 || (uftAtlas.atlasEntries.Count>0 && EditorUtility.DisplayDialog("This action will remove all existing textures on your atlas", "Do you want to proceed?","Proceed","Cancel"))){
@@ -296,9 +300,17 @@ public class UFTAtlasEditor : EditorWindow {
 
 	void onClickSave ()
 	{
-		UFTAtlasMetadata metadata=uftAtlas.getAtlasMetadata("testName");
-		AssetDatabase.CreateAsset(metadata,"Assets/atlasMeta.asset");
+		string assetPath="Assets/"+uftAtlas.atlasName;
 		
+		string fullPath=Application.dataPath+"/"+uftAtlas.atlasName;
+		bool isAnyAssetsExists=(File.Exists(@fullPath+".asset") || File.Exists(@fullPath+".png"));
+	
+		
+		if (!isAnyAssetsExists || (EditorUtility.DisplayDialog("Some assets with following name "+uftAtlas.atlasName+" already exists", "Do you want to overwrite it?","Yes","No"))){		
+			UFTAtlasMetadata metadata=uftAtlas.saveAtlasTextureAndGetMetadata(assetPath);
+			AssetDatabase.CreateAsset(metadata,assetPath+".asset");
+			atlasMetadata=metadata;
+		}
 	}
 
 	void onClickNew ()

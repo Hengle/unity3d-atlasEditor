@@ -71,5 +71,8 @@ public class UFTAtlasMetadata : ScriptableObject {
 	[SerializeField]
 	public Texture2D texture;
 	
+	[SerializeField]
+	public string atlasName;
+	
 	
 }
