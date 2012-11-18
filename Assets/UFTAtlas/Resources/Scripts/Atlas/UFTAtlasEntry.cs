@@ -175,8 +175,25 @@ public class UFTAtlasEntry:ScriptableObject{
 		controlBlinkTime=null;
 	}
 	
+	
+	//return true if texture has been trimmed, or false if not
+	public bool trimTexture ()
+	{
+		Texture2D newTexture=UFTTextureUtil.trimTextureAlpha (texture);
+		if (newTexture!=texture){
+			canvasRect.width=newTexture.width;
+			canvasRect.height=newTexture.height;
+			isTrimmed=true;
+			texture=newTexture;
+			if (UFTAtlasEditorEventManager.onTextureSizeChanged!=null)
+				UFTAtlasEditorEventManager.onTextureSizeChanged(this);			
+			return true;			
+		}
+		return false;
+	}
+	
 	public void readPropertiesFromMetadata(UFTAtlasEntryMetadata metadata){
-		Texture2D texture=(Texture2D) AssetDatabase.LoadAssetAtPath(metadata.assetPath,typeof(Texture2D));	
+		Texture2D texture= UFTTextureUtil.importTexture(metadata.assetPath);	
 		if (texture==null){
 			throw new TextureDoesNotExistsException(metadata.assetPath);	
 		} else {
@@ -185,7 +202,7 @@ public class UFTAtlasEntry:ScriptableObject{
 			this.name=metadata.name;
 			this.isTrimmed=metadata.isTrimmed;
 			if (this.isTrimmed){
-				this.texture=UFTTextureUtil.trimTextureAlpha(this.texture);					
+				trimTexture();
 			}						
 		}
 	}

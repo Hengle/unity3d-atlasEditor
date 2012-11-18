@@ -133,6 +133,15 @@ public class UFTTextureUtil : MonoBehaviour {
 		}
 		//Object.DestroyImmediate((Object) texture);
 		AssetDatabase.ImportAsset(assetPath);
+		texture= importTexture (assetPath);
+		return texture;
+	}
+
+	public static Texture2D importTexture (string assetPath)
+	{
+		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
+		if (texture==null)
+			return null;
 		TextureImporter textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
 		textureImporter.textureFormat=TextureImporterFormat.ARGB32;
 		textureImporter.textureType=TextureImporterType.Advanced;
@@ -141,8 +150,7 @@ public class UFTTextureUtil : MonoBehaviour {
 		textureImporter.filterMode=FilterMode.Point;
 		textureImporter.npotScale=TextureImporterNPOTScale.None;
 		AssetDatabase.ImportAsset(assetPath);
-		texture= (Texture2D) AssetDatabase.LoadAssetAtPath(assetPath, typeof (Texture2D));
-		return texture;
+		return (Texture2D) AssetDatabase.LoadAssetAtPath(assetPath, typeof (Texture2D));
 	}
 	
 	
@@ -151,7 +159,7 @@ public class UFTTextureUtil : MonoBehaviour {
 		int textureWidth=2;
 		
 		string assetPath="Assets/UFTAtlas/Editor/Texture/AtlasCanvasBGTile.png";
-		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Mesh));
+		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		if (texture==null){
 			texture=createCheckerBoard(textureWidth,textureWidth,bgColor1,bgColor2, squareWidth);
 			byte[] bytes = texture.EncodeToPNG();
@@ -265,8 +273,7 @@ public class UFTTextureUtil : MonoBehaviour {
 		int newHeight=maxV-minV+1;
 		if (newWidth!=width || newHeight!=height){
 			
-			int newColorSize=(newWidth*newHeight);
-			Debug.Log("newColorSize="+newColorSize);
+			int newColorSize=(newWidth*newHeight);			
 			Color32[] newColor=new Color32[newColorSize];
 			if(newColor.Length==0)
 				throw new System.Exception("trimmed texture has a zerro size");

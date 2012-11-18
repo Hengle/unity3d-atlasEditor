@@ -158,15 +158,8 @@ public class UFTAtlas : ScriptableObject {
 	public void trimAllEntries(){
 		bool somethingChanged=false;
 		foreach(UFTAtlasEntry atlasEntry in atlasEntries){
-			Texture2D newTexture=UFTTextureUtil.trimTextureAlpha (atlasEntry.texture);
-			if (newTexture!=atlasEntry.texture){
-				atlasEntry.canvasRect.width=newTexture.width;
-				atlasEntry.canvasRect.height=newTexture.height;
-				atlasEntry.texture=newTexture;
-				if (UFTAtlasEditorEventManager.onTextureSizeChanged!=null)
-					UFTAtlasEditorEventManager.onTextureSizeChanged(atlasEntry);
+			if (atlasEntry.trimTexture())
 				somethingChanged=true;
-			}
 		}
 		if (somethingChanged)
 			sendEventAtlasChanged();
@@ -246,10 +239,6 @@ public class UFTAtlas : ScriptableObject {
 		int height=(int)atlasHeight;
 		Texture2D tmpTexture=new Texture2D(width,height);
 		Texture2D[] entries= atlasEntries.ConvertAll<Texture2D>(entry=>entry.texture).ToArray();
-		
-		Debug.Log("count==="+entries.Length);
-		
-		
 		Rect[] rects=tmpTexture.PackTextures(entries,borderSize);
 		
 		for (int i = 0; i < rects.Length; i++) {
