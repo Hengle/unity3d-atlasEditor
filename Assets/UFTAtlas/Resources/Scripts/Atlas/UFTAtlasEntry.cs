@@ -44,10 +44,12 @@ public class UFTAtlasEntry:ScriptableObject{
 	
 	public Rect uvRect {
 		get {
-			float x = canvasRect.x == 0 ? 0 : (float) uftAtlas.atlasWidth / (float)canvasRect.x;
-			float y = canvasRect.y == 0 ? 0 : (float) uftAtlas.atlasHeight / (float)canvasRect.y;
-			float width = (float) uftAtlas.atlasWidth / (float)canvasRect.width;
-			float height= (float) uftAtlas.atlasHeight / (float)canvasRect.height;
+			float x = (float)canvasRect.x / (float) uftAtlas.atlasWidth;
+			
+			float width = (float)canvasRect.width / (float) uftAtlas.atlasWidth;
+			float height= (float)canvasRect.height / (float) uftAtlas.atlasHeight;
+			
+			float y = 1-height - (float)canvasRect.y / (float) uftAtlas.atlasHeight;
 			return new Rect(x,y,width,height);
 		}
 	}
