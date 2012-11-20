@@ -2,13 +2,16 @@ using UnityEngine;
 using System.Collections;
 using System.IO;
 using System.Collections.Generic;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 public class UFTTextureUtil : MonoBehaviour {
 	public static Color bgColor1=Color.white;
 	public static Color bgColor2=new Color(0.8f,0.8f,0.8f,1f);
 	
-	
+#if UNITY_EDITOR	
 	private static GUIStyle _borderStyle;  
 
 	public static GUIStyle borderStyle {
@@ -38,7 +41,7 @@ public class UFTTextureUtil : MonoBehaviour {
 			_atlasCanvasBGTile = value;
 		}
 	}	
-	
+#endif	
 	
 
 	public static Dictionary<UFTTextureState,Color> borderColorDict=new Dictionary<UFTTextureState, Color>(){
@@ -97,7 +100,7 @@ public class UFTTextureUtil : MonoBehaviour {
 		file.Close();
 	}
 
-	
+#if UNITY_EDITOR
 	public static Texture2D createOnePxBorderTexture(){
 		string assetPath="Assets/UFTAtlas/Editor/Texture/onePxBorder.png";
 		
@@ -129,7 +132,9 @@ public class UFTTextureUtil : MonoBehaviour {
 		
 		byte[] bytes = texture.EncodeToPNG();
 		if (bytes != null){
+#if !UNITY_WEBPLAYER
 			File.WriteAllBytes(assetPath, bytes);			
+#endif			
 		}
 		//Object.DestroyImmediate((Object) texture);
 		AssetDatabase.ImportAsset(assetPath);
@@ -162,9 +167,11 @@ public class UFTTextureUtil : MonoBehaviour {
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		if (texture==null){
 			texture=createCheckerBoard(textureWidth,textureWidth,bgColor1,bgColor2, squareWidth);
+#if !UNITY_WEBPLAYER
 			byte[] bytes = texture.EncodeToPNG();
-		    if (bytes != null)
+			if (bytes != null)
 		      File.WriteAllBytes(assetPath, bytes);
+#endif
 			 AssetDatabase.ImportAsset(assetPath);
 		    TextureImporter textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
 		     textureImporter.textureFormat=TextureImporterFormat.ARGB32;
@@ -178,7 +185,7 @@ public class UFTTextureUtil : MonoBehaviour {
 		}
 		return texture;
 	}
-	
+#endif
 	
 	
 	//here we just generate Texture2d
