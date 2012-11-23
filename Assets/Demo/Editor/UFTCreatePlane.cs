@@ -10,11 +10,9 @@ public class UFTCreatePlane : ScriptableWizard {
 	public UFTAtlasMetadata atlasMetadata;
 	
 	
-	[MenuItem ("GameObject/Create Plane")]
+	[MenuItem ("GameObject/UFT Create Plane")]
     static void CreateWizard () {
-        ScriptableWizard.DisplayWizard<UFTCreatePlane>("UFT Create Plane", "Create");
-        //If you don't want to use the secondary button simply leave it out:
-        //ScriptableWizard.DisplayWizard<WizardCreateLight>("Create Light", "Create");
+        ScriptableWizard.DisplayWizard<UFTCreatePlane>("UFT Create Plane", "Create");        
     }
 	
 	 void OnWizardCreate () {
