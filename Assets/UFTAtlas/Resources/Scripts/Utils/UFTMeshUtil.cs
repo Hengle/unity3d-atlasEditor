@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class MeshUtil : MonoBehaviour {
+public class UFTMeshUtil : MonoBehaviour {
 
 	public static GameObject createPlane(float width, float height){
 		GameObject go=new GameObject();		
@@ -9,13 +9,6 @@ public class MeshUtil : MonoBehaviour {
 		MeshFilter meshFilter=(MeshFilter)go.AddComponent(typeof(MeshFilter));
 		
 		Mesh mesh=new Mesh();
-		
-		
-		
-		
-		
-		
-		
 		Vector3 point=Vector3.zero;
 		
 		Vector3[] vertices=new Vector3[6];

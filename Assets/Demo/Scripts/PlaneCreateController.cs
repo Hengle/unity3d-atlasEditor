@@ -13,7 +13,7 @@ public class PlaneCreateController : MonoBehaviour {
 		int i=0;
 		foreach(UFTAtlasEntryMetadata entryMeta in metadata.entries){
 			//GameObject gameObject=new GameObject();
-			GameObject gameObject=MeshUtil.createPlane(entryMeta.pixelRect.width,entryMeta.pixelRect.height);			
+			GameObject gameObject=UFTMeshUtil.createPlane(entryMeta.pixelRect.width,entryMeta.pixelRect.height);			
 			
 			gameObject.renderer.material=material;
 			gameObject.AddComponent<PlaneController>();

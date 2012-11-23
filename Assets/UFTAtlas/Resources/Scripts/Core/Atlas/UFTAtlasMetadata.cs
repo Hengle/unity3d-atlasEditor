@@ -63,7 +63,7 @@ public class UFTAtlasEntryMetadata{
 }
 
 
-
+[Serializable]
 public class UFTAtlasMetadata : ScriptableObject {
 	[SerializeField]
 	public UFTAtlasEntryMetadata[] entries;

@@ -16,7 +16,7 @@ public class UFTCreatePlane : ScriptableWizard {
     }
 	
 	 void OnWizardCreate () {
-        GameObject go = MeshUtil.createPlane(width,height);
+        GameObject go = UFTMeshUtil.createPlane(width,height);
 		go.AddComponent<UFTSelectTextureFromAtlas>().atlasMetadata=atlasMetadata;
 		go.renderer.material=material;
 		

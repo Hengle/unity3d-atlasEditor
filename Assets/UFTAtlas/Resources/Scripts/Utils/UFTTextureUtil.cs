@@ -122,7 +122,7 @@ public class UFTTextureUtil : MonoBehaviour {
 		return texture;
 	}
 
-	public static void saveTexture2DToAssets (Texture2D texture, string assetPath)
+	public static Texture2D saveTexture2DToAssets (Texture2D texture, string assetPath)
 	{		
 #if UNITY_WEBPLAYER
 	Debug.LogWarning("texture can't be saved in webplayer build mode, please switch to standalone version");	
@@ -143,8 +143,8 @@ public class UFTTextureUtil : MonoBehaviour {
 		//to prevent leaking, remove this texture and import it again
 		Object.DestroyImmediate((Object) texture);
 		AssetDatabase.ImportAsset(assetPath);
-		importTexture (assetPath, maxTextureSize);
-
+		texture=importTexture (assetPath, maxTextureSize);
+		return texture;
 	}
 
 	public static Texture2D importTexture (string assetPath,int maxTextureSize=1024)

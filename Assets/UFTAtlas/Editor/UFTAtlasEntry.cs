@@ -85,16 +85,14 @@ public class UFTAtlasEntry:ScriptableObject{
 	}
 
 	
-	/*
-	public UFTAtlasEntry (Rect canvasRect, Texture2D texture, UFTAtlas uftAtlas)
-	{
-		this.canvasRect = canvasRect;
-		this.texture = texture;
-		Debug.Log("register events");
-		
-		this.uftAtlas=uftAtlas;
+	//i'm not sure about it, but i think we need to destroy texture on close if texture is clipped, because it doesn't store in assets
+	public void OnDestroy() {
+		if (isTrimmed){
+			DestroyImmediate(texture,true);	
+		}
 	}
-	*/
+	
+	
 	public void OnGUI(){		
 		if (Event.current.type == EventType.MouseUp || (isDragging && stopDragging)){
 			textureState=UFTTextureState.passive;
@@ -192,6 +190,8 @@ public class UFTAtlasEntry:ScriptableObject{
 	//this function change status to size invalid if texture size is greater than width, or heigh
 	public void checkSize (int width, int height)
 	{
+		if (texture==null)
+			return;
 		if (texture.width>width || texture.height>height){
 			isSizeInvalid=true;	
 		}else{

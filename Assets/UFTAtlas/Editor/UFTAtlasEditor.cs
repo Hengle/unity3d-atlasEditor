@@ -223,7 +223,7 @@ public class UFTAtlasEditor : EditorWindow {
 				}
 		
 				EditorGUILayout.Separator();
-				EditorGUILayout.LabelField("Atlas Textures:");
+				EditorGUILayout.LabelField("Atlas Textures ["+uftAtlas.atlasEntries.Count+"]:");
 				if (uftAtlas.atlasEntries.Count>0){
 					if (GUILayout.Button("trim alpha")){
 						uftAtlas.trimAllEntries();				
@@ -308,9 +308,20 @@ public class UFTAtlasEditor : EditorWindow {
 		
 		if (!isAnyAssetsExists || (EditorUtility.DisplayDialog("Some assets with following name "+uftAtlas.atlasName+" already exists", "Do you want to overwrite it?","Yes","No"))){		
 			
+			// if we have already metadata, that's mean that we want to override object, so just need to take old path
+			string texturePath=assetPath+".png";
+			string metadataPath=assetPath+".asset";
+			if (atlasMetadata!=null){
+				Debug.Log("meta!~=null");
+				texturePath=AssetDatabase.GetAssetPath(atlasMetadata.texture);
+				metadataPath=AssetDatabase.GetAssetPath(atlasMetadata);
+			}
 			
-			UFTAtlasMetadata metadata=uftAtlas.saveAtlasTextureAndGetMetadata(assetPath);
-			AssetDatabase.CreateAsset(metadata,assetPath+".asset");
+			
+			Debug.Log("save texture texturePath="+texturePath+"   \n metadataPath="+metadataPath);
+			
+			UFTAtlasMetadata metadata=uftAtlas.saveAtlasTextureAndGetMetadata(texturePath);
+			AssetDatabase.CreateAsset(metadata,metadataPath);
 			atlasMetadata=metadata;
 		}
 	}

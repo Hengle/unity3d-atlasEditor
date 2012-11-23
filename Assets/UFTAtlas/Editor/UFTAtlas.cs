@@ -246,7 +246,7 @@ public class UFTAtlas : ScriptableObject {
 		List<UFTAtlasEntryMetadata> entryMeta=atlasEntries.ConvertAll(new Converter<UFTAtlasEntry,UFTAtlasEntryMetadata>(entryToEntryMetaConverter));
 		
 		Texture2D texture=buildAtlasTexture2d();
-		UFTTextureUtil.saveTexture2DToAssets(texture, assetPath);		
+		texture=UFTTextureUtil.saveTexture2DToAssets(texture, assetPath);		
 		
 		UFTAtlasMetadata atlasMetadata=UFTAtlasMetadata.CreateInstance<UFTAtlasMetadata>();
 		atlasMetadata.entries=entryMeta.ToArray();		
