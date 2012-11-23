@@ -53,8 +53,20 @@ public class UFTAtlasEntry:ScriptableObject{
 		}
 	}
 	
+	private UFTAtlas _uftAtlas;
 	
-	public UFTAtlas uftAtlas;		
+	public UFTAtlas uftAtlas{
+		set{
+			this._uftAtlas=value;
+			checkSize((int)uftAtlas.atlasWidth,(int)uftAtlas.atlasHeight);
+		}
+		get{
+			return this._uftAtlas;	
+		}
+	}
+	
+	
+	
 	private bool isDragging=false;
 	private Vector2 mouseStartPosition;
 	public UFTTextureState textureState=UFTTextureState.passive;
@@ -65,23 +77,26 @@ public class UFTAtlasEntry:ScriptableObject{
 	private Color currentBlinkColor;
 	private long? controlBlinkTime=null;
 	public bool isSizeInvalid=false;
-	
+	private bool stopDragging = false;
 	
 	public void OnEnable(){
-		hideFlags = HideFlags.HideAndDontSave;			
+		hideFlags = HideFlags.HideAndDontSave;
+		UFTAtlasEditorEventManager.onAtlasSizeChanged+=onAtlasSizeChanged;		
 	}
 
 	
+	/*
 	public UFTAtlasEntry (Rect canvasRect, Texture2D texture, UFTAtlas uftAtlas)
 	{
 		this.canvasRect = canvasRect;
 		this.texture = texture;
-		UFTAtlasEditorEventManager.onAtlasSizeChanged+=onAtlasSizeChanged;
+		Debug.Log("register events");
+		
 		this.uftAtlas=uftAtlas;
 	}
-	
+	*/
 	public void OnGUI(){		
-		if (Event.current.type == EventType.MouseUp){
+		if (Event.current.type == EventType.MouseUp || (isDragging && stopDragging)){
 			textureState=UFTTextureState.passive;
 			if (isDragging){
 				isDragging = false;			
@@ -90,20 +105,20 @@ public class UFTAtlasEntry:ScriptableObject{
 				if (UFTAtlasEditorEventManager.onAtlasChange!=null)
 					UFTAtlasEditorEventManager.onAtlasChange();
 			}
-		} else if (Event.current.type == EventType.MouseDown && canvasRect.Contains (Event.current.mousePosition)){
+		} else if (Event.current.type == EventType.MouseDown && canvasRect.Contains (Event.current.mousePosition)){			
 			textureState=UFTTextureState.onDrag;
 			isDragging = true;						
 			textureState=UFTTextureState.onDrag;
 			mouseStartPosition=Event.current.mousePosition;	
 			if (UFTAtlasEditorEventManager.onStartDragging!=null)
 				UFTAtlasEditorEventManager.onStartDragging(this);
-			Event.current.Use();				
+			Event.current.Use();	
+			stopDragging=false;
 		}
 		Color color=GUI.color;
+		
 		if (isDragging){ 
-			
-			Vector2 currentOffset=Event.current.mousePosition-mouseStartPosition;
-			
+			Vector2 currentOffset=Event.current.mousePosition-mouseStartPosition;			
 			if (Event.current.type == EventType.Repaint){
 				canvasRect.x+=currentOffset.x;
 				canvasRect.y+=currentOffset.y;
@@ -113,18 +128,17 @@ public class UFTAtlasEntry:ScriptableObject{
 				} 
 				
 				if (canvasRect.y <0){
-					canvasRect.y=0;					
+					canvasRect.y=0;															
 				}
 				
 				if (canvasRect.xMax > (int)uftAtlas.atlasWidth){
-					canvasRect.x=	(int)uftAtlas.atlasWidth-texture.width;
+					canvasRect.x=	(int)uftAtlas.atlasWidth-texture.width;										
 				}
 				
 				if (canvasRect.yMax > (int)uftAtlas.atlasHeight){
-					canvasRect.y=	(int)uftAtlas.atlasHeight-texture.height;
+					canvasRect.y=	(int)uftAtlas.atlasHeight-texture.height;										
 				}
-				
-				
+								
 				mouseStartPosition=Event.current.mousePosition;
 				
 			}
@@ -132,10 +146,12 @@ public class UFTAtlasEntry:ScriptableObject{
 				UFTAtlasEditorEventManager.onDragInProgress();
 			
 			//if dragging lets color it to drag color border
-			GUI.color=UFTTextureUtil.borderColorDict[UFTTextureState.onDrag];
+			GUI.color=UFTTextureUtil.borderColorDict[UFTTextureState.onDrag];		
 			
 			
-			
+			// check is mouse under texture, if not, initialize dropping
+			if (Event.current.type==EventType.Repaint && !canvasRect.Contains (Event.current.mousePosition))
+				stopDragging=true;			
 		}
 		
 		if (isSizeInvalid){
@@ -167,7 +183,15 @@ public class UFTAtlasEntry:ScriptableObject{
 	}
 	
 	
+	// this is event handler, it's called whenever atlas size is changed
 	private void onAtlasSizeChanged(int width, int height){
+		checkSize (width, height);
+	}
+	
+	
+	//this function change status to size invalid if texture size is greater than width, or heigh
+	public void checkSize (int width, int height)
+	{
 		if (texture.width>width || texture.height>height){
 			isSizeInvalid=true;	
 		}else{
@@ -200,7 +224,7 @@ public class UFTAtlasEntry:ScriptableObject{
 		} else {
 			this.texture=texture;
 			this.canvasRect=metadata.pixelRect;
-			this.name=metadata.name;
+			this.textureName=metadata.name;
 			this.isTrimmed=metadata.isTrimmed;
 			if (this.isTrimmed){
 				trimTexture();
@@ -209,7 +233,7 @@ public class UFTAtlasEntry:ScriptableObject{
 	}
 	
 	public UFTAtlasEntryMetadata getMetadata(){
-		return new UFTAtlasEntryMetadata(name,assetPath,canvasRect,uvRect,isTrimmed);	
+		return new UFTAtlasEntryMetadata(textureName,assetPath,canvasRect,uvRect,isTrimmed);	
 	}
 	
 }
