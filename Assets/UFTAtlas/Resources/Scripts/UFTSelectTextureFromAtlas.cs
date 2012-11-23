@@ -8,24 +8,34 @@ using System.Collections;
 public class UFTSelectTextureFromAtlas : MonoBehaviour {
 	
 	public int textureIndex;	
+	
+	
+	
 	public UFTAtlasMetadata atlasMetadata;
 	
 	
-	
+	public void Reset(){
+		storeOriginalUV();
+	}
 
 	
 	/// <summary>
 	/// In this function we will check if we have uv2 coordinates we will copy uv2 to uv1 (restore original mesh.uv)
 	/// if uv2==null then we will store original uv to it
 	/// </summary>
-	public void Reset(){
+	public void OnEnable(){		
+		storeOriginalUV ();		
+	}
+
+	public void storeOriginalUV ()
+	{
 		Mesh mesh=getObjectMesh();
 		
 		if (mesh.uv2.Length==0 || mesh.uv2==null){
 			mesh.uv2=(Vector2[]) mesh.uv.Clone();		
 		} else {
 			mesh.uv=(Vector2[]) mesh.uv2.Clone();	
-		}		
+		}
 	}
 	
 	

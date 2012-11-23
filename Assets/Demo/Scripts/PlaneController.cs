@@ -31,45 +31,48 @@ public class PlaneController : MonoBehaviour {
 	
 	public void updatePositionAndDirection(){
 		
-			int z=Random.Range(zMin,zMax);
-			SCREEN_SIDE_ENUM side=(SCREEN_SIDE_ENUM) Random.Range(0,4);
-			int x=0;
-			int y=0;
-			int offsetX=0;
-			int offsetY=0;
-			switch (side){
-			case SCREEN_SIDE_ENUM.left:
-				y=Random.Range(OFFSET_Y,Screen.height-OFFSET_Y);				
-				offsetX=-OFFSET_X;
-				direction=Vector3.right;
-				break;
-			
-			case SCREEN_SIDE_ENUM.right:
-				x=Screen.width;
-				offsetX=OFFSET_X;
-				y=Random.Range(OFFSET_Y,Screen.height-OFFSET_Y);
-				direction=Vector3.left;
-				break;
-			
-			case SCREEN_SIDE_ENUM.top:
-				y=Screen.height;
-				x=Random.Range(OFFSET_X,Screen.width-OFFSET_X);				
-				offsetY=OFFSET_Y;
-				direction=Vector3.down;
-				break;
-			case SCREEN_SIDE_ENUM.down:
-				y=0;
-				offsetY=-OFFSET_Y;
-				x=Random.Range(OFFSET_X,Screen.width+OFFSET_X);
-				direction=Vector3.up;
-				break;
-			}
-			speed=z/Random.Range(speedMin,speedMax);
-			Vector3 position= Camera.main.ScreenToWorldPoint(new Vector3(x,y,z));
+		if (Camera.main==null)
+			return;
 		
-			position.x+=offsetX;
-			position.y+=offsetY;
-			transform.position=position;
+		int z=Random.Range(zMin,zMax);
+		SCREEN_SIDE_ENUM side=(SCREEN_SIDE_ENUM) Random.Range(0,4);
+		int x=0;
+		int y=0;
+		int offsetX=0;
+		int offsetY=0;
+		switch (side){
+		case SCREEN_SIDE_ENUM.left:
+			y=Random.Range(OFFSET_Y,Screen.height-OFFSET_Y);				
+			offsetX=-OFFSET_X;
+			direction=Vector3.right;
+			break;
+		
+		case SCREEN_SIDE_ENUM.right:
+			x=Screen.width;
+			offsetX=OFFSET_X;
+			y=Random.Range(OFFSET_Y,Screen.height-OFFSET_Y);
+			direction=Vector3.left;
+			break;
+		
+		case SCREEN_SIDE_ENUM.top:
+			y=Screen.height;
+			x=Random.Range(OFFSET_X,Screen.width-OFFSET_X);				
+			offsetY=OFFSET_Y;
+			direction=Vector3.down;
+			break;
+		case SCREEN_SIDE_ENUM.down:
+			y=0;
+			offsetY=-OFFSET_Y;
+			x=Random.Range(OFFSET_X,Screen.width+OFFSET_X);
+			direction=Vector3.up;
+			break;
+		}
+		speed=z/Random.Range(speedMin,speedMax);
+		Vector3 position= Camera.main.ScreenToWorldPoint(new Vector3(x,y,z));
+	
+		position.x+=offsetX;
+		position.y+=offsetY;
+		transform.position=position;
 		
 	}
 	
