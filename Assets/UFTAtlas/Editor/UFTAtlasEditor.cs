@@ -307,6 +307,8 @@ public class UFTAtlasEditor : EditorWindow {
 	
 		
 		if (!isAnyAssetsExists || (EditorUtility.DisplayDialog("Some assets with following name "+uftAtlas.atlasName+" already exists", "Do you want to overwrite it?","Yes","No"))){		
+			
+			
 			UFTAtlasMetadata metadata=uftAtlas.saveAtlasTextureAndGetMetadata(assetPath);
 			AssetDatabase.CreateAsset(metadata,assetPath+".asset");
 			atlasMetadata=metadata;

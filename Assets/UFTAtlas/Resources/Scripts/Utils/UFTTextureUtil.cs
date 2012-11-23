@@ -116,14 +116,17 @@ public class UFTTextureUtil : MonoBehaviour {
 			texture.Apply();
 			
 			//save to files an then import
-			texture=saveTexture2DToAssets ( texture, assetPath);			
+			saveTexture2DToAssets ( texture, assetPath);			
 			
 		}
 		return texture;
 	}
 
-	public static Texture2D saveTexture2DToAssets (Texture2D texture, string assetPath)
-	{
+	public static void saveTexture2DToAssets (Texture2D texture, string assetPath)
+	{		
+#if UNITY_WEBPLAYER
+	Debug.LogWarning("texture can't be saved in webplayer build mode, please switch to standalone version");	
+#endif
 		
 		if (!assetPath.StartsWith("Assets/"))
 			assetPath="Assets/"+assetPath;
@@ -136,13 +139,15 @@ public class UFTTextureUtil : MonoBehaviour {
 			File.WriteAllBytes(assetPath, bytes);			
 #endif			
 		}
-		//Object.DestroyImmediate((Object) texture);
+		int maxTextureSize=texture.width>texture.height ? texture.width : texture.height;
+		//to prevent leaking, remove this texture and import it again
+		Object.DestroyImmediate((Object) texture);
 		AssetDatabase.ImportAsset(assetPath);
-		texture= importTexture (assetPath);
-		return texture;
+		importTexture (assetPath, maxTextureSize);
+
 	}
 
-	public static Texture2D importTexture (string assetPath)
+	public static Texture2D importTexture (string assetPath,int maxTextureSize=1024)
 	{
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		if (texture==null)
@@ -154,6 +159,7 @@ public class UFTTextureUtil : MonoBehaviour {
 		textureImporter.wrapMode=TextureWrapMode.Clamp;
 		textureImporter.filterMode=FilterMode.Point;
 		textureImporter.npotScale=TextureImporterNPOTScale.None;
+		textureImporter.maxTextureSize=maxTextureSize;
 		AssetDatabase.ImportAsset(assetPath);
 		return (Texture2D) AssetDatabase.LoadAssetAtPath(assetPath, typeof (Texture2D));
 	}

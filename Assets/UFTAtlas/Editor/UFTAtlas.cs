@@ -246,7 +246,7 @@ public class UFTAtlas : ScriptableObject {
 		List<UFTAtlasEntryMetadata> entryMeta=atlasEntries.ConvertAll(new Converter<UFTAtlasEntry,UFTAtlasEntryMetadata>(entryToEntryMetaConverter));
 		
 		Texture2D texture=buildAtlasTexture2d();
-		texture=UFTTextureUtil.saveTexture2DToAssets(texture, assetPath);		
+		UFTTextureUtil.saveTexture2DToAssets(texture, assetPath);		
 		
 		UFTAtlasMetadata atlasMetadata=UFTAtlasMetadata.CreateInstance<UFTAtlasMetadata>();
 		atlasMetadata.entries=entryMeta.ToArray();		
@@ -274,7 +274,8 @@ public class UFTAtlas : ScriptableObject {
 			//convert rect from Atlas(which has 0->1 values, 0.5 means center to pixel values)			
 			Rect newRect=new Rect(rects[i].x*width,rects[i].y*height,atlasEntries[i].canvasRect.width,atlasEntries[i].canvasRect.height);			
 			atlasEntries[i].canvasRect=newRect;			
-		}		 
+		}		
+		DestroyImmediate(tmpTexture,true);
 	}
 	
 	
