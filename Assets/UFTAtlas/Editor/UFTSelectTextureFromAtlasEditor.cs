@@ -31,7 +31,12 @@ public class UFTSelectTextureFromAtlasEditor : Editor {
 			((UFTSelectTextureFromAtlas)target).updateUV();			
 		}
 		
-		
+		UFTSelectTextureFromAtlas script=((UFTSelectTextureFromAtlas)target);
+		if (!script.isUV2Empty()){			
+			if (GUILayout.Button("restore original uv")){
+				((UFTSelectTextureFromAtlas)target).restoreOriginalUVS();
+			}
+		}
 		
 		//debug
 		debug=EditorGUILayout.Toggle("UV Debug mode" ,debug);

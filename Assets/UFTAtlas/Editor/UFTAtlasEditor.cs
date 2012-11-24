@@ -317,9 +317,6 @@ public class UFTAtlasEditor : EditorWindow {
 				metadataPath=AssetDatabase.GetAssetPath(atlasMetadata);
 			}
 			
-			
-			Debug.Log("save texture texturePath="+texturePath+"   \n metadataPath="+metadataPath);
-			
 			UFTAtlasMetadata metadata=uftAtlas.saveAtlasTextureAndGetMetadata(texturePath);
 			AssetDatabase.CreateAsset(metadata,metadataPath);
 			atlasMetadata=metadata;
@@ -332,8 +329,6 @@ public class UFTAtlasEditor : EditorWindow {
 		initOnNewParameters();
 	}
 
-	
-	
 	
 	private bool isTextureCanvasContainsTexture (Texture2D texture)
 	{
