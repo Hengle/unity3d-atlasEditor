@@ -32,9 +32,9 @@ public class UFTAtlasEditor : EditorWindow {
 	
 	
 	
-	[MenuItem ("Window/Free Atlas Editor")]
+	[MenuItem ("Window/UFT Atlas Editor")]
     static void ShowWindow () {    		
-		EditorWindow.GetWindow <UFTAtlasEditor>("Atlas Editor",typeof(SceneView));				
+		EditorWindow.GetWindow <UFTAtlasEditor>("UFT Atlas Editor",typeof(SceneView));				
     }
 	
 	void OnEnable(){
