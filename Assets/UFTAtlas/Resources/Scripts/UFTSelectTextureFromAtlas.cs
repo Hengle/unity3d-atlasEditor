@@ -23,7 +23,7 @@ public class UFTSelectTextureFromAtlas : MonoBehaviour {
 
 	public void storeOriginalUV ()
 	{
-		Mesh mesh=getObjectMesh();		
+		Mesh mesh=UFTMeshUtil.getObjectMesh(gameObject);		
 		if (isUV2Empty()){
 			mesh.uv2=(Vector2[]) mesh.uv.Clone();		
 		} else {
@@ -36,31 +36,18 @@ public class UFTSelectTextureFromAtlas : MonoBehaviour {
 	/// </summary>		
 	public void updateUV(){
 		Rect rect=atlasMetadata.entries[textureIndex].uvRect;
-		Mesh mesh=getObjectMesh();
+		Mesh mesh=UFTMeshUtil.getObjectMesh(gameObject);
 		Vector2[] uvs=new Vector2[mesh.uv2.Length];
 		for (int i=0; i<uvs.Length; i++){
 			uvs[i].x = mesh.uv2[i].x * rect.width + rect.x;
 			uvs[i].y = mesh.uv2[i].y * rect.height + rect.y;			
 		}
 		mesh.uv=uvs;		
-	}
-	
-
-	public Mesh getObjectMesh ()
-	{
-		MeshFilter mf= GetComponent<MeshFilter>();
-		Mesh mesh;
-		if (Application.isEditor){
-			mesh=mf.sharedMesh;
-		} else {
-			mesh=mf.mesh;	
-		}
-		return mesh;
-	}
+	}	
 
 	public bool isUV2Empty ()
 	{
-		Mesh mesh=getObjectMesh();
+		Mesh mesh=UFTMeshUtil.getObjectMesh(gameObject);
 		return mesh.uv2.Length==0 || mesh.uv2==null;
 	}
 	
@@ -68,7 +55,7 @@ public class UFTSelectTextureFromAtlas : MonoBehaviour {
 	
 	
 	public void restoreOriginalUVS(){
-		Mesh mesh=getObjectMesh();
+		Mesh mesh=UFTMeshUtil.getObjectMesh(gameObject);
 		if (isUV2Empty ())
 			throw new System.Exception("mesh.uv2 of your object is wrong, can't restore original values");
 		

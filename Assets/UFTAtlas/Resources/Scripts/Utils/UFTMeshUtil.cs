@@ -44,4 +44,17 @@ public class UFTMeshUtil : MonoBehaviour {
 		meshFilter.sharedMesh=mesh;
 		return go;
 	}
+	
+	
+	public static Mesh getObjectMesh (GameObject gameObject)
+	{
+		MeshFilter mf= gameObject.GetComponent<MeshFilter>();
+		Mesh mesh;
+		if (Application.isEditor){
+			mesh=mf.sharedMesh;
+		} else {
+			mesh=mf.mesh;	
+		}
+		return mesh;
+	}
 }
