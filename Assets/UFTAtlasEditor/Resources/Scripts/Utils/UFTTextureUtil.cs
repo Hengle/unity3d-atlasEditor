@@ -102,7 +102,7 @@ public class UFTTextureUtil : MonoBehaviour {
 
 #if UNITY_EDITOR
 	public static Texture2D createOnePxBorderTexture(){
-		string assetPath="Assets/UFTAtlas/Editor/Texture/onePxBorder.png";
+		string assetPath="Assets/UFTAtlasEditor/Editor/Texture/onePxBorder.png";
 		
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		if (texture==null){
@@ -169,7 +169,7 @@ public class UFTTextureUtil : MonoBehaviour {
 		int squareWidth=1;
 		int textureWidth=2;
 		
-		string assetPath="Assets/UFTAtlas/Editor/Texture/AtlasCanvasBGTile.png";
+		string assetPath="Assets/UFTAtlasEditor/Editor/Texture/AtlasCanvasBGTile.png";
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		if (texture==null){
 			texture=createCheckerBoard(textureWidth,textureWidth,bgColor1,bgColor2, squareWidth);
