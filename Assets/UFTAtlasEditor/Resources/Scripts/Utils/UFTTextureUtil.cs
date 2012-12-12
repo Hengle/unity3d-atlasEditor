@@ -10,6 +10,8 @@ using UnityEditor;
 public class UFTTextureUtil : MonoBehaviour {
 	public static Color bgColor1=Color.white;
 	public static Color bgColor2=new Color(0.8f,0.8f,0.8f,1f);
+	public static string EDITOR_TEXTURE_DIRECTORY="Assets/UFTAtlasEditor/Editor/Texture";
+	
 	
 #if UNITY_EDITOR	
 	private static GUIStyle _borderStyle;  
@@ -102,7 +104,8 @@ public class UFTTextureUtil : MonoBehaviour {
 
 #if UNITY_EDITOR
 	public static Texture2D createOnePxBorderTexture(){
-		string assetPath="Assets/UFTAtlasEditor/Editor/Texture/onePxBorder.png";
+		createTextureDirectoryIfNoExists();
+		string assetPath=EDITOR_TEXTURE_DIRECTORY+"/onePxBorder.png";
 		
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		if (texture==null){
@@ -121,7 +124,16 @@ public class UFTTextureUtil : MonoBehaviour {
 		}
 		return texture;
 	}
-
+	
+	private static void createTextureDirectoryIfNoExists(){
+		DirectoryInfo dir=new DirectoryInfo( EDITOR_TEXTURE_DIRECTORY);
+		if (!dir.Exists){
+			dir.Create();	
+		}
+			
+	}
+	
+	
 	public static Texture2D saveTexture2DToAssets (Texture2D texture, string assetPath)
 	{		
 #if UNITY_WEBPLAYER
@@ -168,8 +180,8 @@ public class UFTTextureUtil : MonoBehaviour {
 	public static Texture2D getCheckerBoardTile(){
 		int squareWidth=1;
 		int textureWidth=2;
-		
-		string assetPath="Assets/UFTAtlasEditor/Editor/Texture/AtlasCanvasBGTile.png";
+		createTextureDirectoryIfNoExists();
+		string assetPath=EDITOR_TEXTURE_DIRECTORY+"/AtlasCanvasBGTile.png";
 		Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		if (texture==null){
 			texture=createCheckerBoard(textureWidth,textureWidth,bgColor1,bgColor2, squareWidth);
