@@ -277,11 +277,11 @@ public class UFTAtlas : ScriptableObject {
 		}		
 		DestroyImmediate(tmpTexture,true);
 	}
-	
+
 	
 	// save all entries textures to one Texture2d, this function doesn't store result texture to asset or to the file
 	public Texture2D buildAtlasTexture2d(){
-		Texture2D atlasTexture=new Texture2D((int)atlasWidth,(int)atlasHeight);
+		Texture2D atlasTexture=UFTTextureUtil.getBlankTexture((int)atlasWidth,(int)atlasHeight);
 		Color32[] atlasColors=atlasTexture.GetPixels32();
 		foreach (UFTAtlasEntry entry in atlasEntries){
 			Texture2D entryTexture=entry.texture;
@@ -302,5 +302,6 @@ public class UFTAtlas : ScriptableObject {
 		atlasTexture.Apply();
 		return atlasTexture;
 	}
+	
 	
 }

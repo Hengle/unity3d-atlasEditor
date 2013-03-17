@@ -317,4 +317,14 @@ public class UFTTextureUtil : MonoBehaviour {
 		return texture;
 	}
 	
+		
+	public static Texture2D getBlankTexture(int width, int height){		
+		Texture2D texture =new Texture2D( width, height);
+		Color32[] colors=texture.GetPixels32();
+		for (int i = 0; i < colors.Length; i++) {
+			colors[i]=Color.clear;
+		}
+		texture.SetPixels32(colors);
+		return texture;		
+	}
 }
