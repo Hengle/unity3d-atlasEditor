@@ -11,3 +11,6 @@ Assets/AssetStoreTools/
 Assets/AssetStoreTools.meta
 Assets/UFTAtlasEditor/Demo/Images/
 Assets/Images/
+Assets/UFTAtlasEditor/Editor/Texture.meta
+Assets/UFTAtlasEditor/Editor/Texture/AtlasCanvasBGTile.png.meta
+Assets/UFTAtlasEditor/Editor/Texture/onePxBorder.png.meta
