@@ -6,13 +6,27 @@ public class UFTAtlasMigrateWizard : ScriptableWizard {
 	public UFTAtlasMetadata atlasMetadataFrom;
 	public UFTAtlasMetadata atlasMetadataTo;
 	
+	private static string EDITORPREFS_ATLASMIGRATION_FROM="uftAtlasEditor.atlasFrom";
+	private static string EDITORPREFS_ATLASMIGRATION_TO="uftAtlasEditor.atlasTo";
+	
+	
     [MenuItem ("Window/UFT Atlas Migration")]
     static void CreateWizard () {
-        ScriptableWizard.DisplayWizard<UFTAtlasMigrateWizard>("Migrate all objects to new atlas", "Migrate!");        
+        UFTAtlasMigrateWizard wizard= ScriptableWizard.DisplayWizard<UFTAtlasMigrateWizard>("Migrate all objects to new atlas", "Migrate!");        
+		
+		string atlasFrom=EditorPrefs.GetString(EDITORPREFS_ATLASMIGRATION_FROM,null);
+		if (atlasFrom != null)
+			wizard.atlasMetadataFrom = (UFTAtlasMetadata) AssetDatabase.LoadAssetAtPath(atlasFrom,typeof(UFTAtlasMetadata));
+		
+		string atlasTo=EditorPrefs.GetString(EDITORPREFS_ATLASMIGRATION_TO,null);
+		if (atlasFrom != null)
+			wizard.atlasMetadataTo = (UFTAtlasMetadata) AssetDatabase.LoadAssetAtPath(atlasTo,typeof(UFTAtlasMetadata));
     }
 	
 	void OnWizardCreate(){
-		UFTAtlasUtil.migrateAtlasMatchEntriesByName(atlasMetadataFrom,atlasMetadataTo);
+		UFTAtlasUtil.migrateAtlasMatchEntriesByName(atlasMetadataFrom,atlasMetadataTo);		
+		EditorPrefs.SetString(EDITORPREFS_ATLASMIGRATION_FROM,AssetDatabase.GetAssetPath(atlasMetadataFrom));
+		EditorPrefs.SetString(EDITORPREFS_ATLASMIGRATION_TO,AssetDatabase.GetAssetPath(atlasMetadataTo));
 		Debug.Log("done");
 	}
 	

@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEditor;
 
-public class UFTCreatePlane : ScriptableWizard {
+public class UFTCreatePlaneWindow : ScriptableWizard {
 	public string meshName="plane";
 	public int width=256;
 	public int height=128;
@@ -10,9 +10,9 @@ public class UFTCreatePlane : ScriptableWizard {
 	public UFTAtlasMetadata atlasMetadata;
 	
 	
-	[MenuItem ("GameObject/UFT Create Plane")]
+	[MenuItem ("Window/UFT SimplePlane")]
     static void CreateWizard () {
-        ScriptableWizard.DisplayWizard<UFTCreatePlane>("UFT Create Plane", "Create");        
+        ScriptableWizard.DisplayWizard<UFTCreatePlaneWindow>("Window/UFT SimplePlane", "Create");        
     }
 	
 	 void OnWizardCreate () {
