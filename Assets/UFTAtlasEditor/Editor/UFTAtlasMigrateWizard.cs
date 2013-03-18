@@ -12,7 +12,8 @@ public class UFTAtlasMigrateWizard : ScriptableWizard {
     }
 	
 	void OnWizardCreate(){
-		
+		UFTAtlasUtil.migrateAtlasMatchEntriesByName(atlasMetadataFrom,atlasMetadataTo);
+		Debug.Log("done");
 	}
 	
 	void OnWizardUpdate(){
