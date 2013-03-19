@@ -13,14 +13,6 @@ public class UFTSelectTextureFromAtlas : MonoBehaviour {
 		storeOriginalUV();
 	}
 	
-	/// <summary>
-	/// In this function we will check if we have uv2 coordinates we will copy uv2 to uv1 (restore original mesh.uv)
-	/// if uv2==null then we will store original uv to it
-	/// </summary>
-	public void OnEnable(){		
-		storeOriginalUV ();		
-	}
-
 	public void storeOriginalUV ()
 	{
 		Mesh mesh=UFTMeshUtil.getObjectMesh(gameObject);		
@@ -35,6 +27,7 @@ public class UFTSelectTextureFromAtlas : MonoBehaviour {
 	/// Updates mesh uv, we will take original mesh.uv from uv2 coordinates and then multiply to atlas position
 	/// </summary>		
 	public void updateUV(){
+		storeOriginalUV ();
 		Rect rect=atlasMetadata.entries[textureIndex].uvRect;
 		Mesh mesh=UFTMeshUtil.getObjectMesh(gameObject);
 		Vector2[] uvs=new Vector2[mesh.uv2.Length];

@@ -21,7 +21,9 @@ public class UFTAtlasMigrateWizard : ScriptableWizard {
 		string atlasTo=EditorPrefs.GetString(EDITORPREFS_ATLASMIGRATION_TO,null);
 		if (atlasFrom != null)
 			wizard.atlasMetadataTo = (UFTAtlasMetadata) AssetDatabase.LoadAssetAtPath(atlasTo,typeof(UFTAtlasMetadata));
-    }
+		
+		wizard.checkIsAllPropertiesSet();
+	}
 	
 	void OnWizardCreate(){
 		UFTAtlasUtil.migrateAtlasMatchEntriesByName(atlasMetadataFrom,atlasMetadataTo);		
@@ -29,9 +31,14 @@ public class UFTAtlasMigrateWizard : ScriptableWizard {
 		EditorPrefs.SetString(EDITORPREFS_ATLASMIGRATION_TO,AssetDatabase.GetAssetPath(atlasMetadataTo));
 		Debug.Log("done");
 	}
+
+	public void checkIsAllPropertiesSet ()
+	{
+		isValid=((atlasMetadataFrom != null) && (atlasMetadataTo != null) && (atlasMetadataTo != atlasMetadataFrom));
+	}
 	
 	void OnWizardUpdate(){
-		isValid=((atlasMetadataFrom != null) && (atlasMetadataTo != null) && (atlasMetadataTo != atlasMetadataFrom));	
+		checkIsAllPropertiesSet ();	
 		helpString = "atlas metadatas must be different and point to the objects." +
 			"\nAll objects which use source metatadata will be updated" +
 			"\nIf this objects will has entryMetadat this links will be changed according to names";
