@@ -4,7 +4,7 @@ using System;
 
 
 [Serializable]
-public class UFTAtlasEntryMetadata{
+public class UFTAtlasEntryMetadata {
 	[SerializeField]
 	public string _name;
 	

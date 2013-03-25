@@ -77,14 +77,17 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 				foreach (UFTObjectOnScene obj in objects){
 					EditorGUILayout.BeginHorizontal();
 					EditorGUILayout.Separator();
-					if (GUILayout.Button(""+obj.component.name))
+					if (GUILayout.Button(""+obj.component.name,GUILayout.Width(250)))
 						Selection.activeObject = obj.component.gameObject;
-					EditorGUILayout.BeginVertical();
-					 foreach (FieldInfo field in obj.propertyList) {
-					 	EditorGUILayout.Toggle(field.Name,true);	
-					 }
-					EditorGUILayout.EndVertical();
 					
+					GUILayout.FlexibleSpace();
+					EditorGUILayout.BeginVertical();
+						foreach (FieldInfo field in obj.propertyList) {
+							EditorGUILayout.Toggle(field.Name,true);	
+						}
+						
+					EditorGUILayout.EndVertical();
+				
 					EditorGUILayout.EndHorizontal();
 				}
 			}

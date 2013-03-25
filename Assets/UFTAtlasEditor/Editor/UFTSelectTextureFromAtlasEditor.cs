@@ -7,33 +7,40 @@ using UnityEditor;
 public class UFTSelectTextureFromAtlasEditor : Editor {
 	SerializedProperty textureIndex;
 	SerializedProperty atlasMetadata;
+	SerializedProperty atlasEntryMetadata;
 	
 	private bool debug=false;
 	
 	void OnEnable () {
         // Setup the SerializedProperties
-        textureIndex = serializedObject.FindProperty ("textureIndex");  
-		atlasMetadata= serializedObject.FindProperty("atlasMetadata");
+        textureIndex       = serializedObject.FindProperty("textureIndex");  
+		atlasMetadata      = serializedObject.FindProperty("atlasMetadata");
+		atlasEntryMetadata = serializedObject.FindProperty("atlasEntryMetadata");
     }
 	
 	public override void OnInspectorGUI(){
 		
-		UFTSelectTextureFromAtlas script=((UFTSelectTextureFromAtlas) target);
-		if (script.atlasMetadata!=null){
-			
-			EditorGUILayout.IntSlider(textureIndex,0,script.atlasMetadata.entries.Length-1);		
+		UFTSelectTextureFromAtlas targetObj=(UFTSelectTextureFromAtlas)target;
+		targetObj.atlasMetadata =(UFTAtlasMetadata) EditorGUILayout.ObjectField(targetObj.atlasMetadata,typeof(UFTAtlasMetadata));
+		
+		if (targetObj.atlasMetadata!=null){			
+			int newValue=EditorGUILayout.IntSlider(targetObj.textureIndex ,0,targetObj.atlasMetadata.entries.Length-1);								
+			if (newValue != targetObj.textureIndex){
+				targetObj.textureIndex=newValue;
+				if (atlasEntryMetadata !=null)
+					serializedObject.Update();
+			}
 		}
 		
-		EditorGUILayout.PropertyField(atlasMetadata);
-		serializedObject.ApplyModifiedProperties ();
+		GUI.enabled=false;
+		if (atlasEntryMetadata !=null)
+			EditorGUILayout.PropertyField(atlasEntryMetadata,true);
+		GUI.enabled=true;
 		
-		if (GUI.changed){
-			((UFTSelectTextureFromAtlas)target).updateUV();			
-		}
 				
-		if (!script.isUV2Empty()){			
+		if (!targetObj.isUV2Empty()){			
 			if (GUILayout.Button("restore original uv")){
-				script.restoreOriginalUVS();
+				targetObj.restoreOriginalUVS();
 			}
 		}
 		
@@ -43,14 +50,14 @@ public class UFTSelectTextureFromAtlasEditor : Editor {
 		if (debug){
 			EditorGUILayout.LabelField("==========================================");
 			EditorGUILayout.LabelField("uv (actual uv):");
-			Vector2[] uv=UFTMeshUtil.getObjectMesh(script.gameObject).uv;
+			Vector2[] uv=UFTMeshUtil.getObjectMesh(targetObj.gameObject).uv;
 			foreach(Vector2 v in uv){
 				EditorGUILayout.Vector2Field("",v);	
 			}
 			
 			EditorGUILayout.LabelField("==========================================");
 			EditorGUILayout.LabelField("uv2 (original uv):");
-			Vector2[] uv2=UFTMeshUtil.getObjectMesh(script.gameObject).uv2;
+			Vector2[] uv2=UFTMeshUtil.getObjectMesh(targetObj.gameObject).uv2;
 			foreach(Vector2 v in uv2){
 				EditorGUILayout.Vector2Field("",v);	
 			}			

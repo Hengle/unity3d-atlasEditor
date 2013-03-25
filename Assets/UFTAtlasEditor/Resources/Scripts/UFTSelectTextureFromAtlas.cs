@@ -6,8 +6,23 @@ using System.Collections;
 // and then we will apply texture from attlas, we will multiply original uv2 to atlas position
 
 public class UFTSelectTextureFromAtlas : MonoBehaviour {	
-	public int textureIndex;	
+	private int _textureIndex;	
+
+	public int textureIndex {
+		get {
+			return this._textureIndex;
+		}
+		set {
+			_textureIndex = value;
+			if (atlasMetadata != null)
+				atlasEntryMetadata=atlasMetadata.entries[textureIndex];
+			this.updateUV();
+		}
+	}
+
 	public UFTAtlasMetadata atlasMetadata;
+	public UFTAtlasEntryMetadata atlasEntryMetadata;
+	
 	
 	public void Reset(){
 		storeOriginalUV();
@@ -28,7 +43,7 @@ public class UFTSelectTextureFromAtlas : MonoBehaviour {
 	/// </summary>		
 	public void updateUV(){
 		storeOriginalUV ();
-		Rect rect=atlasMetadata.entries[textureIndex].uvRect;
+		Rect rect=atlasMetadata.entries[_textureIndex].uvRect;
 		Mesh mesh=UFTMeshUtil.getObjectMesh(gameObject);
 		Vector2[] uvs=new Vector2[mesh.uv2.Length];
 		for (int i=0; i<uvs.Length; i++){
