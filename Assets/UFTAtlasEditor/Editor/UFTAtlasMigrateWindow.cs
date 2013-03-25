@@ -69,9 +69,13 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 	{
 		
 		if (objectList !=null && objectList.Count > 0){
+			
+			
 			scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 			foreach (System.Type objectType in objectList.Keys) {
 				EditorGUILayout.LabelField(objectType.ToString()+":");
+				printHeader();
+				EditorGUILayout.Separator();
 				List<UFTObjectOnScene> objects=objectList[objectType];
 				
 				foreach (UFTObjectOnScene obj in objects){
@@ -99,10 +103,19 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 				}
 			}
 			EditorGUILayout.EndScrollView();
-		
+			GUILayout.Button("migrate!");
+			
 		}
 	}
 	
+	private void printHeader(){
+		EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.Separator();
+			EditorGUILayout.LabelField("objectName",GUILayout.Width(250));
+			EditorGUILayout.LabelField("propertyType",GUILayout.Width(200));
+			EditorGUILayout.LabelField("propertyNameValue");
+		EditorGUILayout.EndHorizontal();					
+	}
 	
 	private string getValueFromFieldInfo(FieldInfo fi, Component go){
 		string result="";
