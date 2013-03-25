@@ -80,15 +80,22 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 					if (GUILayout.Button(""+obj.component.name,GUILayout.Width(250)))
 						Selection.activeObject = obj.component.gameObject;
 					
-					GUILayout.FlexibleSpace();
+					//GUILayout.FlexibleSpace();
 					EditorGUILayout.BeginVertical();
 						foreach (FieldInfo field in obj.propertyList) {
-							EditorGUILayout.Toggle(field.Name,true);	
+							EditorGUILayout.BeginHorizontal();
+								EditorGUILayout.LabelField("["+field.Name+"]",GUILayout.Width(200));
+													
+								
+								EditorGUILayout.Toggle(getValueFromFieldInfo(field, obj.component) ,true);	
+								GUILayout.FlexibleSpace();
+							EditorGUILayout.EndHorizontal();
 						}
 						
 					EditorGUILayout.EndVertical();
 				
 					EditorGUILayout.EndHorizontal();
+					EditorGUILayout.Separator();
 				}
 			}
 			EditorGUILayout.EndScrollView();
@@ -96,6 +103,19 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 		}
 	}
 	
+	
+	private string getValueFromFieldInfo(FieldInfo fi, Component go){
+		string result="";
+		if ( fi.FieldType == typeof(UFTAtlasMetadata)){
+			result=((UFTAtlasMetadata)fi.GetValue(go)).atlasName;	
+		} else if ( fi.FieldType == typeof(UFTAtlasEntryMetadata)){
+			result=((UFTAtlasEntryMetadata)fi.GetValue(go)).name;
+		} else {
+			throw new System.Exception("unsuported FieldInfo type exception ="+fi.FieldType);	
+		}
+		
+		return result;
+	}
 	
 
 	void updateObjectList ()
