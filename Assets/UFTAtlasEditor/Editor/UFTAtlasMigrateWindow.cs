@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Collections;
 
 public class UFTAtlasMigrateWindow : EditorWindow {
 	public UFTAtlasMetadata atlasMetadataFrom;
@@ -10,6 +11,8 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 	private static string EDITORPREFS_ATLASMIGRATION_FROM="uftAtlasEditor.atlasFrom";
 	private static string EDITORPREFS_ATLASMIGRATION_TO="uftAtlasEditor.atlasTo";
 	
+	Dictionary<int,bool> checkedObjectsHash;
+	bool DEFAULT_CHECKED_OBJECT_VALUE=true;
 	
 	Dictionary<System.Type,List<UFTObjectOnScene>>  objectList;
 	
@@ -34,6 +37,11 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 			window.atlasMetadataTo = (UFTAtlasMetadata) AssetDatabase.LoadAssetAtPath(atlasTo,typeof(UFTAtlasMetadata));
 		
 		window.checkIsAllPropertiesSet();
+	}
+
+	void migrate ()
+	{
+		throw new System.NotImplementedException ();
 	}
 	
 	void OnWizardCreate(){
@@ -91,7 +99,9 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 								EditorGUILayout.LabelField("["+field.Name+"]",GUILayout.Width(200));
 													
 								
-								EditorGUILayout.Toggle(getValueFromFieldInfo(field, obj.component) ,true);	
+								bool val= EditorGUILayout.Toggle(getValueFromFieldInfo(field, obj.component) ,isFieldChecked(field,obj.component));	
+								if (val !=isFieldChecked(field,obj.component))
+									setFieldChecked(field,obj.component,val);
 								GUILayout.FlexibleSpace();
 							EditorGUILayout.EndHorizontal();
 						}
@@ -103,9 +113,55 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 				}
 			}
 			EditorGUILayout.EndScrollView();
-			GUILayout.Button("migrate!");
+			showSelectUnselectAllButtons();
+			
+			if (GUILayout.Button("migrate!"))
+				migrate();
 			
 		}
+	}
+
+	void showSelectUnselectAllButtons ()
+	{
+		EditorGUILayout.BeginHorizontal();
+			if (GUILayout.Button("unselect all"))
+				changeValueForAllObjectsTo(false);
+			if (GUILayout.Button("select all"))
+				changeValueForAllObjectsTo(true);			
+		EditorGUILayout.EndHorizontal();
+	}
+
+	void changeValueForAllObjectsTo (bool val)
+	{		
+		Dictionary<int,bool> newDict=new Dictionary<int, bool>();
+		foreach(int key in checkedObjectsHash.Keys){
+			newDict.Add(key,val);	
+		}		
+		checkedObjectsHash=newDict;		
+	}
+	
+	
+	
+	
+	
+	void setFieldChecked(FieldInfo field, Component component, bool val){
+		int hash=getCombinedHash(field,component);
+		checkedObjectsHash[hash]=val;
+	}
+	
+	bool isFieldChecked (FieldInfo field, Component component)
+	{
+		int hash=getCombinedHash(field,component);
+		if (checkedObjectsHash.ContainsKey (hash)){
+			return	(bool)checkedObjectsHash[hash];
+		} else {
+			checkedObjectsHash.Add(hash,DEFAULT_CHECKED_OBJECT_VALUE);
+			return DEFAULT_CHECKED_OBJECT_VALUE;
+		}
+	}
+	
+	private int getCombinedHash(FieldInfo field, Component component){
+		return (field.GetHashCode() +"]["+component.GetHashCode()).GetHashCode();
 	}
 	
 	private void printHeader(){
@@ -137,7 +193,10 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 			objectList = new Dictionary<System.Type, List<UFTObjectOnScene>>();
 		
 		objectList = UFTAtlasUtil.getObjectOnSceneByAtlas(atlasMetadataFrom,typeof(UFTAtlasEntryMetadata));
+		checkedObjectsHash = new Dictionary<int, bool>();
 	}
+
+	
 	
 	
 	
