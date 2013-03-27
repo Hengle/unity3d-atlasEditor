@@ -56,21 +56,71 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 		if (newMeta != atlasMetadataFrom ){
 			atlasMetadataFrom= newMeta;
 			EditorPrefs.SetString(EDITORPREFS_ATLASMIGRATION_FROM,AssetDatabase.GetAssetPath(atlasMetadataFrom));
-			if (newMeta!=null){
-				updateObjectList();					
-			}
+			
 		}
 		UFTAtlasMetadata newMetaTo=(UFTAtlasMetadata) EditorGUILayout.ObjectField("source atlas",atlasMetadataTo,typeof(UFTAtlasMetadata),false);
 		if (newMetaTo != atlasMetadataTo ){
 			atlasMetadataTo= newMetaTo;
 			EditorPrefs.SetString(EDITORPREFS_ATLASMIGRATION_TO,AssetDatabase.GetAssetPath(atlasMetadataTo));
+			if (isAllMetadataObjectsValid ()){
+				updateObjectList();					
+			}
 		}
 		
-		displayObjectListIfExist();				
+		if (isAllMetadataObjectsValid()){			
+			displayUpdateLinksToTextureMaterial();
+			displayObjectListIfExist();							
+			if (GUILayout.Button("migrate!"))
+				migrate();			
+		}
 		
-		if (GUILayout.Button("migrate!"))
-			migrate();
+	}
+
+	bool isAllMetadataObjectsValid ()
+	{
+		return atlasMetadataFrom!=null && atlasMetadataTo !=null && atlasMetadataFrom != atlasMetadataTo;
+	}
+	
+	public bool updateMaterial;
+	
+	void displayUpdateLinksToTextureMaterial ()
+	{
+		updateMaterial = EditorGUILayout.Toggle("update links to texture materials",updateMaterial);
+		if (updateMaterial){
+			List<Material> materials=getMaterialListByAtlasMetadata(atlasMetadataFrom);
+			if (materials.Count == 0){
+				EditorGUILayout.LabelField("non of material use " + atlasMetadataTo.name + " atlas texture");
+			} else {
+				EditorGUILayout.LabelField("Materials ["+materials.Count+"] :");
+				EditorGUILayout.BeginHorizontal();
+				foreach(Material mat in materials){
+					EditorGUILayout.Separator();
+					EditorGUILayout.Toggle(""+mat.name,true);
+				}
+				EditorGUILayout.EndVertical();
+			}
+		}
+	}
+
+	List<Material> getMaterialListByAtlasMetadata (UFTAtlasMetadata atlasMetadataFrom)
+	{
+		Texture2D sourceTexture = atlasMetadataFrom.texture;
+		List<Material> result=new List<Material>();
+		Material[] allMaterials=(Material[])Resources.FindObjectsOfTypeAll(typeof(Material));
 		
+		foreach(Material mat in allMaterials){
+			Debug.Log("material name"+mat.name);
+			List<Texture> textures=UFTMaterialUtil.getTextures(mat);
+			
+			foreach (Texture tex in textures){
+				Debug.Log("maintext="+tex);
+				if (AssetDatabase.Equals(tex,sourceTexture)){
+					result.Add(mat);	
+					break;
+				}				
+			}			
+		}
+		return result;
 	}
 	
 

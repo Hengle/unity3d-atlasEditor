@@ -24,7 +24,7 @@ public class UFTAtlasUtil  {
 		*/		
 		
 	}
-	
+
 	public static Dictionary<System.Type,List<UFTObjectOnScene>> getObjectOnSceneByAtlas(UFTAtlasMetadata atlasMetadata, System.Type additionalType=null){
 		Dictionary<System.Type,List<UFTObjectOnScene>> result = new Dictionary<System.Type, List<UFTObjectOnScene>>();
 		
