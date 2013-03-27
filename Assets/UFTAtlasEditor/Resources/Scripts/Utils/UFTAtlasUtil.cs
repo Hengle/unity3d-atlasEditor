@@ -49,14 +49,12 @@ public class UFTAtlasUtil  {
 				List<UFTObjectOnScene> list;
 				if ( !result.ContainsKey(component.GetType())){
 					list = new List<UFTObjectOnScene>();
-					Dictionary<System.Type,List<UFTObjectOnScene>> dict = new Dictionary<System.Type, List<UFTObjectOnScene>>();
 					result.Add(component.GetType(),list);
 				} else {
 					list = result[component.GetType()];
 				}
 				list.Add(objectOnScene);
-			}
-			
+			}			
 		}
 		
 		return result;

@@ -5,23 +5,20 @@ using UnityEditor;
 
 [CustomEditor(typeof(UFTSelectTextureFromAtlas))]
 public class UFTSelectTextureFromAtlasEditor : Editor {
-	SerializedProperty textureIndex;
-	SerializedProperty atlasMetadata;
+	
+	
 	SerializedProperty atlasEntryMetadata;
 	
 	private bool debug=false;
 	
 	void OnEnable () {
-        // Setup the SerializedProperties
-        textureIndex       = serializedObject.FindProperty("textureIndex");  
-		atlasMetadata      = serializedObject.FindProperty("atlasMetadata");
-		atlasEntryMetadata = serializedObject.FindProperty("atlasEntryMetadata");
+    	atlasEntryMetadata = serializedObject.FindProperty("atlasEntryMetadataInst");
     }
 	
 	public override void OnInspectorGUI(){
 		
 		UFTSelectTextureFromAtlas targetObj=(UFTSelectTextureFromAtlas)target;
-		targetObj.atlasMetadata =(UFTAtlasMetadata) EditorGUILayout.ObjectField(targetObj.atlasMetadata,typeof(UFTAtlasMetadata));
+		targetObj.atlasMetadata =(UFTAtlasMetadata) EditorGUILayout.ObjectField(targetObj.atlasMetadata,typeof(UFTAtlasMetadata),false);
 		
 		if (targetObj.atlasMetadata!=null){			
 			int newValue=EditorGUILayout.IntSlider(targetObj.textureIndex ,0,targetObj.atlasMetadata.entries.Length-1);								

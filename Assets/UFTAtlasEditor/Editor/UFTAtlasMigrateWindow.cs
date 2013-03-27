@@ -11,6 +11,8 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 	private static string EDITORPREFS_ATLASMIGRATION_FROM="uftAtlasEditor.atlasFrom";
 	private static string EDITORPREFS_ATLASMIGRATION_TO="uftAtlasEditor.atlasTo";
 	
+	private Vector2 scrollPosition;
+	
 	Dictionary<int,bool> checkedObjectsHash;
 	bool DEFAULT_CHECKED_OBJECT_VALUE=true;
 	
@@ -19,7 +21,7 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 	
 	private static string HELP_STRING = "atlas metadatas must be different and point to the objects." +
 			"\nAll objects which use source metatadata will be updated" +
-			"\nIf this objects will has entryMetadat this links will be changed according to names";
+			"\nIf this objects will has entryMetadata this links will be changed according to path";
 	
     [MenuItem ("Window/UFT Atlas Migration")]
     static void CreateWindow () {
@@ -34,15 +36,10 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 		}
 		string atlasTo=EditorPrefs.GetString(EDITORPREFS_ATLASMIGRATION_TO,null);
 		if (atlasFrom != null)
-			window.atlasMetadataTo = (UFTAtlasMetadata) AssetDatabase.LoadAssetAtPath(atlasTo,typeof(UFTAtlasMetadata));
-		
-		window.checkIsAllPropertiesSet();
+			window.atlasMetadataTo = (UFTAtlasMetadata) AssetDatabase.LoadAssetAtPath(atlasTo,typeof(UFTAtlasMetadata));		
 	}
 
-	void migrate ()
-	{
-		throw new System.NotImplementedException ();
-	}
+	
 	
 	void OnWizardCreate(){
 		UFTAtlasUtil.migrateAtlasMatchEntriesByName(atlasMetadataFrom,atlasMetadataTo);		
@@ -63,15 +60,20 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 				updateObjectList();					
 			}
 		}
-		
+		UFTAtlasMetadata newMetaTo=(UFTAtlasMetadata) EditorGUILayout.ObjectField("source atlas",atlasMetadataTo,typeof(UFTAtlasMetadata),false);
+		if (newMetaTo != atlasMetadataTo ){
+			atlasMetadataTo= newMetaTo;
+			EditorPrefs.SetString(EDITORPREFS_ATLASMIGRATION_TO,AssetDatabase.GetAssetPath(atlasMetadataTo));
+		}
 		
 		displayObjectListIfExist();				
 		
-		
+		if (GUILayout.Button("migrate!"))
+			migrate();
 		
 	}
 	
-	Vector2 scrollPosition;
+
 	
 	void displayObjectListIfExist ()
 	{
@@ -96,13 +98,15 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 					EditorGUILayout.BeginVertical();
 						foreach (FieldInfo field in obj.propertyList) {
 							EditorGUILayout.BeginHorizontal();
-								EditorGUILayout.LabelField("["+field.Name+"]",GUILayout.Width(200));
+								EditorGUILayout.LabelField(field.Name,GUILayout.Width(200));
 													
 								
-								bool val= EditorGUILayout.Toggle(getValueFromFieldInfo(field, obj.component) ,isFieldChecked(field,obj.component));	
+								bool val= EditorGUILayout.Toggle(getNameFromFieldInfo(field, obj.component) ,isFieldChecked(field,obj.component),GUILayout.Width(200));	
 								if (val !=isFieldChecked(field,obj.component))
 									setFieldChecked(field,obj.component,val);
+								EditorGUILayout.LabelField(field.FieldType.ToString());
 								GUILayout.FlexibleSpace();
+						
 							EditorGUILayout.EndHorizontal();
 						}
 						
@@ -115,12 +119,54 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 			EditorGUILayout.EndScrollView();
 			showSelectUnselectAllButtons();
 			
-			if (GUILayout.Button("migrate!"))
-				migrate();
-			
 		}
 	}
+	
+	void migrate ()
+	{
+		Dictionary<string,UFTAtlasEntryMetadata> targetAtlasByMetaDictionary=getAtlasByMetaDictionary(atlasMetadataTo);
+		foreach(KeyValuePair<System.Type,List<UFTObjectOnScene>> keyValue in objectList){
+			foreach(UFTObjectOnScene obj in keyValue.Value){
+				Component component=obj.component;
+				foreach(FieldInfo fieldInfo in obj.propertyList){
+					if (isFieldChecked(fieldInfo,component)){
+						setNewFieldValue(fieldInfo,component,ref targetAtlasByMetaDictionary);	
+					}
+				}
+				if (component is UFTOnAtlasMigrateInt)
+					((UFTOnAtlasMigrateInt)component).onAtlasMigrate();				
+			}
+		}		
+	}
 
+	void setNewFieldValue (FieldInfo fieldInfo, Component component, ref Dictionary<string, UFTAtlasEntryMetadata> targetAtlasByMetaDictionary)
+	{
+		if ( fieldInfo.FieldType == typeof(UFTAtlasMetadata)){
+			fieldInfo.SetValue(component,atlasMetadataTo);
+			//result=((UFTAtlasMetadata)fieldInfo.GetValue(go)).atlasName;	
+		} else if ( fieldInfo.FieldType == typeof(UFTAtlasEntryMetadata)){
+			UFTAtlasEntryMetadata oldEntryMeta= (UFTAtlasEntryMetadata)fieldInfo.GetValue(component);			
+			string path=oldEntryMeta.assetPath;
+			fieldInfo.SetValue(component,targetAtlasByMetaDictionary[path]);
+		} else {
+			throw new System.Exception("unsuported FieldInfo type exception  fieldType="+fieldInfo.FieldType);	
+		}		
+	}
+	
+	
+
+	private Dictionary<string, UFTAtlasEntryMetadata> getAtlasByMetaDictionary (UFTAtlasMetadata atlasMetadataTo)
+	{
+		Dictionary<string, UFTAtlasEntryMetadata> result= new Dictionary<string, UFTAtlasEntryMetadata>();
+		foreach(UFTAtlasEntryMetadata entry in atlasMetadataTo.entries){
+			result.Add(entry.assetPath,entry);	
+		}
+		return result;
+	}
+	
+	
+	
+	
 	void showSelectUnselectAllButtons ()
 	{
 		EditorGUILayout.BeginHorizontal();
@@ -167,13 +213,15 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 	private void printHeader(){
 		EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.Separator();
-			EditorGUILayout.LabelField("objectName",GUILayout.Width(250));
-			EditorGUILayout.LabelField("propertyType",GUILayout.Width(200));
-			EditorGUILayout.LabelField("propertyNameValue");
+			EditorGUILayout.LabelField("Object Name",GUILayout.Width(250));
+			EditorGUILayout.LabelField("Property Name",GUILayout.Width(200));
+			EditorGUILayout.LabelField("Property Value",GUILayout.Width(200));
+			EditorGUILayout.LabelField("Property Type");
+			GUILayout.FlexibleSpace();
 		EditorGUILayout.EndHorizontal();					
 	}
 	
-	private string getValueFromFieldInfo(FieldInfo fi, Component go){
+	private string getNameFromFieldInfo(FieldInfo fi, Component go){
 		string result="";
 		if ( fi.FieldType == typeof(UFTAtlasMetadata)){
 			result=((UFTAtlasMetadata)fi.GetValue(go)).atlasName;	
@@ -196,22 +244,5 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 		checkedObjectsHash = new Dictionary<int, bool>();
 	}
 
-	
-	
-	
-	
-	
-	
-	public void checkIsAllPropertiesSet ()
-	{
-		//isValid=((atlasMetadataFrom != null) && (atlasMetadataTo != null) && (atlasMetadataTo != atlasMetadataFrom));
-	}
-	
-	
-	void OnWizardUpdate(){
-		//checkIsAllPropertiesSet ();	
-		
-				
-	}
 	
 }

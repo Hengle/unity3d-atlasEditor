@@ -5,7 +5,7 @@ using System.Collections;
 // In this script we will store original uv's to mesh.uv2
 // and then we will apply texture from attlas, we will multiply original uv2 to atlas position
 
-public class UFTSelectTextureFromAtlas : MonoBehaviour {	
+public class UFTSelectTextureFromAtlas : MonoBehaviour, UFTOnAtlasMigrateInt {	
 	private int _textureIndex;	
 
 	public int textureIndex {
@@ -15,13 +15,13 @@ public class UFTSelectTextureFromAtlas : MonoBehaviour {
 		set {
 			_textureIndex = value;
 			if (atlasMetadata != null)
-				atlasEntryMetadata=atlasMetadata.entries[textureIndex];
+				atlasEntryMetadataInst=atlasMetadata.entries[textureIndex];
 			this.updateUV();
 		}
 	}
 
 	public UFTAtlasMetadata atlasMetadata;
-	public UFTAtlasEntryMetadata atlasEntryMetadata;
+	public UFTAtlasEntryMetadata atlasEntryMetadataInst;
 	
 	
 	public void Reset(){
@@ -70,4 +70,17 @@ public class UFTSelectTextureFromAtlas : MonoBehaviour {
 		mesh.uv=(Vector2[]) mesh.uv2.Clone();
 		
 	}
+
+	#region UFTOnAtlasMigrateInt implementation
+	public void onAtlasMigrate ()
+	{
+		// clalculate index (because migration just change public field atlasMetadata and atlasEntryMetadata)
+		for (int i = 0; i < atlasMetadata.entries.Length; i++) {
+			if (atlasMetadata.entries[i] == atlasEntryMetadataInst){
+				textureIndex=i;
+				break;
+			}
+		}		
+	}
+	#endregion
 }
