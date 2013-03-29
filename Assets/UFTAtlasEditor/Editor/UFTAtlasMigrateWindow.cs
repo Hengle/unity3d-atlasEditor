@@ -85,43 +85,35 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 	
 	void displayUpdateLinksToTextureMaterial ()
 	{
-		updateMaterial = EditorGUILayout.Toggle("update links to texture materials",updateMaterial);
+		updateMaterial = EditorGUILayout.Toggle("update texture materials",updateMaterial);
 		if (updateMaterial){
-			List<Material> materials=getMaterialListByAtlasMetadata(atlasMetadataFrom);
+			List<UFTMaterialWitTextureProps> materials=UFTMaterialUtil.getMaterialListByTexture(atlasMetadataFrom.texture);
 			if (materials.Count == 0){
 				EditorGUILayout.LabelField("non of material use " + atlasMetadataTo.name + " atlas texture");
 			} else {
 				EditorGUILayout.LabelField("Materials ["+materials.Count+"] :");
-				EditorGUILayout.BeginHorizontal();
-				foreach(Material mat in materials){
+				
+				foreach(UFTMaterialWitTextureProps mat in materials){
 					EditorGUILayout.Separator();
-					EditorGUILayout.Toggle(""+mat.name,true);
+					EditorGUILayout.BeginHorizontal();
+					if (GUILayout.Button(""+mat.material.name,GUILayout.Width(250),GUILayout.Width(250)))
+						Selection.activeObject = mat.material;
+					EditorGUILayout.Separator();
+				
+					foreach (string propName in mat.textureProperties) {
+						EditorGUILayout.Toggle(""+propName,true,GUILayout.Width(200));		
+					}
+						
+					GUILayout.FlexibleSpace();
+					
+					EditorGUILayout.EndVertical();
 				}
-				EditorGUILayout.EndVertical();
+				
 			}
 		}
 	}
 
-	List<Material> getMaterialListByAtlasMetadata (UFTAtlasMetadata atlasMetadataFrom)
-	{
-		Texture2D sourceTexture = atlasMetadataFrom.texture;
-		List<Material> result=new List<Material>();
-		Material[] allMaterials=(Material[])Resources.FindObjectsOfTypeAll(typeof(Material));
-		
-		foreach(Material mat in allMaterials){
-			Debug.Log("material name"+mat.name);
-			List<Texture> textures=UFTMaterialUtil.getTextures(mat);
-			
-			foreach (Texture tex in textures){
-				Debug.Log("maintext="+tex);
-				if (AssetDatabase.Equals(tex,sourceTexture)){
-					result.Add(mat);	
-					break;
-				}				
-			}			
-		}
-		return result;
-	}
+
 	
 
 	
@@ -186,7 +178,15 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 				if (component is UFTOnAtlasMigrateInt)
 					((UFTOnAtlasMigrateInt)component).onAtlasMigrate();				
 			}
-		}		
+		}	
+		
+		if (updateMaterial)
+			migrateMaterial();
+	}
+
+	void migrateMaterial()
+	{
+		throw new System.NotImplementedException ();
 	}
 
 	void setNewFieldValue (FieldInfo fieldInfo, Component component, ref Dictionary<string, UFTAtlasEntryMetadata> targetAtlasByMetaDictionary)
