@@ -10,12 +10,16 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 	
 	private static string EDITORPREFS_ATLASMIGRATION_FROM="uftAtlasEditor.atlasFrom";
 	private static string EDITORPREFS_ATLASMIGRATION_TO="uftAtlasEditor.atlasTo";
+	private static string EDITORPREFS_ATLASMIGRATION_UPDATE_MATERIAL="uftAtlasEditor.updateMaterial";
 	
 	private Vector2 scrollPosition;
-	
+	private bool updateMaterial;
 	Dictionary<int,bool> checkedObjectsHash;
-	bool DEFAULT_CHECKED_OBJECT_VALUE=true;
+	Dictionary<int,bool> checkedMaterialsHash;
+	List<UFTMaterialWitTextureProps> materials;
 	
+	bool DEFAULT_CHECKED_OBJECT_VALUE=true;
+	bool DEFAULT_CHECKED_MATERIAL_PROPERTY_VALUE=true;
 	Dictionary<System.Type,List<UFTObjectOnScene>>  objectList;
 	
 	
@@ -26,19 +30,24 @@ public class UFTAtlasMigrateWindow : EditorWindow {
     [MenuItem ("Window/UFT Atlas Migration")]
     static void CreateWindow () {
         UFTAtlasMigrateWindow window=(UFTAtlasMigrateWindow) EditorWindow.GetWindow(typeof(UFTAtlasMigrateWindow));        
-		
+		window.initialize();
+			
+	}
+	
+	void initialize(){
 		string atlasFrom=EditorPrefs.GetString(EDITORPREFS_ATLASMIGRATION_FROM,null);
 		if (atlasFrom != null){
-			window.atlasMetadataFrom = (UFTAtlasMetadata) AssetDatabase.LoadAssetAtPath(atlasFrom,typeof(UFTAtlasMetadata));
-			if (window.atlasMetadataFrom !=null){
-				window.updateObjectList();	
+			atlasMetadataFrom = (UFTAtlasMetadata) AssetDatabase.LoadAssetAtPath(atlasFrom,typeof(UFTAtlasMetadata));
+			if (atlasMetadataFrom !=null){
+				updateObjectList();
+				updateMaterialTextureList();		
 			}
 		}
 		string atlasTo=EditorPrefs.GetString(EDITORPREFS_ATLASMIGRATION_TO,null);
 		if (atlasFrom != null)
-			window.atlasMetadataTo = (UFTAtlasMetadata) AssetDatabase.LoadAssetAtPath(atlasTo,typeof(UFTAtlasMetadata));		
+			atlasMetadataTo = (UFTAtlasMetadata) AssetDatabase.LoadAssetAtPath(atlasTo,typeof(UFTAtlasMetadata));	
+		updateMaterial = EditorPrefs.GetBool(EDITORPREFS_ATLASMIGRATION_UPDATE_MATERIAL,false);
 	}
-
 	
 	
 	void OnWizardCreate(){
@@ -56,7 +65,7 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 		if (newMeta != atlasMetadataFrom ){
 			atlasMetadataFrom= newMeta;
 			EditorPrefs.SetString(EDITORPREFS_ATLASMIGRATION_FROM,AssetDatabase.GetAssetPath(atlasMetadataFrom));
-			
+			updateMaterialTextureList();
 		}
 		UFTAtlasMetadata newMetaTo=(UFTAtlasMetadata) EditorGUILayout.ObjectField("source atlas",atlasMetadataTo,typeof(UFTAtlasMetadata),false);
 		if (newMetaTo != atlasMetadataTo ){
@@ -81,13 +90,22 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 		return atlasMetadataFrom!=null && atlasMetadataTo !=null && atlasMetadataFrom != atlasMetadataTo;
 	}
 	
-	public bool updateMaterial;
+	
+
+	void updateMaterialTextureList ()
+	{
+		materials=UFTMaterialUtil.getMaterialListByTexture(atlasMetadataFrom.texture);
+		checkedMaterialsHash = new Dictionary<int, bool>();
+	}
 	
 	void displayUpdateLinksToTextureMaterial ()
 	{
-		updateMaterial = EditorGUILayout.Toggle("update texture materials",updateMaterial);
-		if (updateMaterial){
-			List<UFTMaterialWitTextureProps> materials=UFTMaterialUtil.getMaterialListByTexture(atlasMetadataFrom.texture);
+		bool newUpdMaterialValue= EditorGUILayout.Toggle("update texture materials",updateMaterial);
+		if (newUpdMaterialValue != updateMaterial){
+			updateMaterial=newUpdMaterialValue;
+			EditorPrefs.SetBool (EDITORPREFS_ATLASMIGRATION_UPDATE_MATERIAL,updateMaterial);			
+		}
+		if (updateMaterial && materials!=null ){			
 			if (materials.Count == 0){
 				EditorGUILayout.LabelField("non of material use " + atlasMetadataTo.name + " atlas texture");
 			} else {
@@ -101,7 +119,10 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 					EditorGUILayout.Separator();
 				
 					foreach (string propName in mat.textureProperties) {
-						EditorGUILayout.Toggle(""+propName,true,GUILayout.Width(200));		
+						bool newValue=EditorGUILayout.Toggle(""+propName, isPropertyMaterialChecked(mat, propName),GUILayout.Width(200));		
+						if (newValue!=isPropertyMaterialChecked(mat,propName)){
+							setPropertyMaterialChecked(mat,propName,newValue);
+						}
 					}
 						
 					GUILayout.FlexibleSpace();
@@ -112,10 +133,27 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 			}
 		}
 	}
-
-
+	void setPropertyMaterialChecked(UFTMaterialWitTextureProps mat, string propName, bool val){
+		int hash=getCominedMaterialPropertyHash(mat,propName);
+		checkedMaterialsHash[hash]=val;
+	}
 	
-
+	
+	bool isPropertyMaterialChecked (UFTMaterialWitTextureProps mat, string propName)
+	{
+		int hash=getCominedMaterialPropertyHash(mat,propName);
+		if (checkedMaterialsHash.ContainsKey(hash)){
+			return checkedMaterialsHash[hash];
+		} else {
+			checkedMaterialsHash.Add(hash,DEFAULT_CHECKED_MATERIAL_PROPERTY_VALUE);
+			return DEFAULT_CHECKED_MATERIAL_PROPERTY_VALUE;
+		}
+	}
+	
+	private int getCominedMaterialPropertyHash(UFTMaterialWitTextureProps mat, string propName){
+		return (mat.GetHashCode() +"]["+propName.GetHashCode()).GetHashCode();
+		
+	}	
 	
 	void displayObjectListIfExist ()
 	{
@@ -241,22 +279,22 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 	
 	
 	void setFieldChecked(FieldInfo field, Component component, bool val){
-		int hash=getCombinedHash(field,component);
+		int hash=getCombinedFieldHash(field,component);
 		checkedObjectsHash[hash]=val;
 	}
 	
 	bool isFieldChecked (FieldInfo field, Component component)
 	{
-		int hash=getCombinedHash(field,component);
+		int hash=getCombinedFieldHash(field,component);
 		if (checkedObjectsHash.ContainsKey (hash)){
 			return	(bool)checkedObjectsHash[hash];
 		} else {
 			checkedObjectsHash.Add(hash,DEFAULT_CHECKED_OBJECT_VALUE);
 			return DEFAULT_CHECKED_OBJECT_VALUE;
 		}
-	}
+	}	
 	
-	private int getCombinedHash(FieldInfo field, Component component){
+	private int getCombinedFieldHash(FieldInfo field, Component component){
 		return (field.GetHashCode() +"]["+component.GetHashCode()).GetHashCode();
 	}
 	
