@@ -109,30 +109,41 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 			if (materials.Count == 0){
 				EditorGUILayout.LabelField("non of material use " + atlasMetadataTo.name + " atlas texture");
 			} else {
-				EditorGUILayout.LabelField("Materials ["+materials.Count+"] :");
-				
+				EditorGUILayout.LabelField("Materials ["+materials.Count+"] :");				
 				foreach(UFTMaterialWitTextureProps mat in materials){
 					EditorGUILayout.Separator();
 					EditorGUILayout.BeginHorizontal();
 					if (GUILayout.Button(""+mat.material.name,GUILayout.Width(250),GUILayout.Width(250)))
 						Selection.activeObject = mat.material;
-					EditorGUILayout.Separator();
-				
+					EditorGUILayout.Separator();				
 					foreach (string propName in mat.textureProperties) {
 						bool newValue=EditorGUILayout.Toggle(""+propName, isPropertyMaterialChecked(mat, propName),GUILayout.Width(200));		
 						if (newValue!=isPropertyMaterialChecked(mat,propName)){
 							setPropertyMaterialChecked(mat,propName,newValue);
 						}
-					}
-						
-					GUILayout.FlexibleSpace();
-					
+					}						
+					GUILayout.FlexibleSpace();					
 					EditorGUILayout.EndVertical();
+					EditorGUILayout.Separator();
 				}
 				
 			}
 		}
 	}
+	
+	
+	void migrateMaterial()
+	{
+		foreach(UFTMaterialWitTextureProps mat in materials){			
+			foreach (string propName in mat.textureProperties) {				
+				if (isPropertyMaterialChecked(mat,propName)){
+					mat.material.SetTexture(propName,atlasMetadataTo.texture);
+				}
+			}									
+		}
+	}
+
+	
 	void setPropertyMaterialChecked(UFTMaterialWitTextureProps mat, string propName, bool val){
 		int hash=getCominedMaterialPropertyHash(mat,propName);
 		checkedMaterialsHash[hash]=val;
@@ -156,11 +167,8 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 	}	
 	
 	void displayObjectListIfExist ()
-	{
-		
+	{		
 		if (objectList !=null && objectList.Count > 0){
-			
-			
 			scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 			foreach (System.Type objectType in objectList.Keys) {
 				EditorGUILayout.LabelField(objectType.ToString()+":");
@@ -220,11 +228,6 @@ public class UFTAtlasMigrateWindow : EditorWindow {
 		
 		if (updateMaterial)
 			migrateMaterial();
-	}
-
-	void migrateMaterial()
-	{
-		throw new System.NotImplementedException ();
 	}
 
 	void setNewFieldValue (FieldInfo fieldInfo, Component component, ref Dictionary<string, UFTAtlasEntryMetadata> targetAtlasByMetaDictionary)
