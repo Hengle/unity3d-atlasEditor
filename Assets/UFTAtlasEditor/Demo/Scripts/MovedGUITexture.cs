@@ -60,7 +60,6 @@ public class MovedGUITexture : MonoBehaviour {
 		topLimit = -height;
 		downLimit = Screen.height + height;
 		startTime = Time.time;
-		Debug.Log("x = "+x +" y = "+y+" directionX="+directionX+" dirctionY="+directionY);
 	}
 	
 	void resetSpeed(){
