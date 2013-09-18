@@ -3,7 +3,7 @@ using System.Collections;
 
 public class OnGuiPlaneController : MonoBehaviour {
 	public UFTAtlasMetadata metadata;
-	public float newObjectTimeout=1f;
+	public float newObjectTimeout=0.5f;
 	
 	IEnumerator  GeneratePlanes ()
 	{

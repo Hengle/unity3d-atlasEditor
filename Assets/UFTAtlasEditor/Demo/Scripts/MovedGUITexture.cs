@@ -43,7 +43,7 @@ public class MovedGUITexture : MonoBehaviour {
 	public void reset(){		
 		resetDirection ();
 		resetSpeed();
-		float ratio = Random.Range(0.5f,1f);
+		float ratio = Random.Range(0.8f,1.2f);
 		width =(int)( entryMetadata.pixelRect.width * ratio);
 		height =(int)( entryMetadata.pixelRect.height * ratio);
 		if (directionX != 0){
