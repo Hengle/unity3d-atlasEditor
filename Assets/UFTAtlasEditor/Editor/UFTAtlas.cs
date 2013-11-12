@@ -143,7 +143,7 @@ public class UFTAtlas : ScriptableObject {
 	}
 	
 	
-	public void addNewEntry(Texture2D texture, string assetPath){		
+	public UFTAtlasEntry addNewEntry(Texture2D texture, string assetPath){		
 		string name=assetPath.Substring(assetPath.LastIndexOf('/')+1);
 		
 		Rect rect=new Rect(0,0,texture.width,texture.height);
@@ -157,6 +157,7 @@ public class UFTAtlas : ScriptableObject {
 		if (UFTAtlasEditorEventManager.onAddNewEntry!=null)
 			UFTAtlasEditorEventManager.onAddNewEntry(uftAtlasEntry);
 		sendEventAtlasChanged();
+		return uftAtlasEntry;
 	}
 	
 	
@@ -206,12 +207,17 @@ public class UFTAtlas : ScriptableObject {
 	void removeLatestEntryFromList ()
 	{		
 		UFTAtlasEntry latestEntry= atlasEntries[atlasEntries.Count-1];
+		removeEntry(latestEntry);
+	}
+
+	public void removeEntry(UFTAtlasEntry entry){
 		if (UFTAtlasEditorEventManager.onRemoveEntry!=null)
-			UFTAtlasEditorEventManager.onRemoveEntry(latestEntry);			
-		atlasEntries.Remove(latestEntry);
+			UFTAtlasEditorEventManager.onRemoveEntry(entry);			
+		atlasEntries.Remove(entry);
 		sendEventAtlasChanged();
 	}
-	
+
+
 	private void Repaint(){
 		if (UFTAtlasEditorEventManager.onNeedToRepaint!=null)
 			UFTAtlasEditorEventManager.onNeedToRepaint();
