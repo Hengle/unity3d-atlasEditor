@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class MovedGUITexture : MonoBehaviour {
+public class MovedGUITexture {
 	public float speed;
 	public UFTAtlasEntryMetadata entryMetadata;
 	public UFTAtlasMetadata atlasMetadata;	
-	
+	public OnGuiPlaneController ogpc;
 	int directionX;
 	int directionY;
 	
@@ -23,17 +23,24 @@ public class MovedGUITexture : MonoBehaviour {
 	float startTime;
 	Vector2 widthHeight;
 	Vector2 currentPoint;	
-	void OnGUI () {
-		int cx;
-		int cy;
-		if (directionX !=0){
-			cx = (int)( x + directionX * speed * (Time.time - startTime));
-			cy = y;
-		} else {
-			cy = (int)( y + directionY * speed * (Time.time - startTime));
-			cx = x;
+	int lastx;
+	int lasty;
+	public void OnGUI () {
+		int cx=lastx;
+		int cy=lasty;
+		if (!ogpc.pause){
+			if (directionX !=0){
+				cx = (int)( x + directionX * speed * (Time.time - startTime));
+				cy = y;
+			} else {
+				cy = (int)( y + directionY * speed * (Time.time - startTime));
+				cx = x;
+			}
+			
 		}
-		GUI.DrawTextureWithTexCoords(new Rect(cx,cy,width,height),atlasMetadata.texture,entryMetadata.uvRect);
+		GUI.DrawTextureWithTexCoords(new Rect(cx,cy,width,height),atlasMetadata.texture,entryMetadata.uvRect,false);
+		lastx = cx;
+		lasty = cy;
 		if (cx>rigthLimit || cx < leftLimit || cy < topLimit || cy > downLimit)
 			reset ();
 	}
@@ -42,8 +49,8 @@ public class MovedGUITexture : MonoBehaviour {
 	
 	public void reset(){		
 		resetDirection ();
-		resetSpeed();
-		float ratio = Random.Range(0.8f,1.2f);
+		resetSpeed();		
+		float ratio =1;// Random.Range(0.8f,1.2f);
 		width =(int)( entryMetadata.pixelRect.width * ratio);
 		height =(int)( entryMetadata.pixelRect.height * ratio);
 		if (directionX != 0){
