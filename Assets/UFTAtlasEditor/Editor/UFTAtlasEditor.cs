@@ -15,7 +15,9 @@ using System.IO;
 public class UFTAtlasEditor : EditorWindow {
 	[SerializeField]
 	private UFTAtlas uftAtlas;
-	
+	Dictionary<ImageAsset,UFTAtlasEntry> imageAssetDict;
+	List<ImageAsset> images;
+
 	private bool isAtlasDirty=false;
 	public Vector2 scrollPosition = Vector2.zero;
 	public Vector2 atlasTexturesScrollPosition=Vector2.zero;
@@ -23,6 +25,8 @@ public class UFTAtlasEditor : EditorWindow {
 	
 	
 	UFTAtlasMetadata atlasMetadata;
+	ImageNavigator imageNavigator;
+
 	private static string EDITOR_PREFS_KEY_ATLAS_WIDHT="uft.atlasEditor.width";
 	private static string EDITOR_PREFS_KEY_ATLAS_HEIGHT="uft.atlasEditor.height";
 	
@@ -48,6 +52,11 @@ public class UFTAtlasEditor : EditorWindow {
 	{
 		atlasMetadata=null;
 		uftAtlas=UFTAtlas.CreateInstance<UFTAtlas>();
+		imageNavigator = new ImageNavigator();
+		imageAssetDict = new Dictionary<ImageAsset, UFTAtlasEntry>();
+		images = new List<ImageAsset>();
+		imageNavigator.initialize(Repaint);
+		imageNavigator.images = images;
 		//get free name
 		string atlasName=UFTFileUtil.getFileName(ATLAS_FILE_MASK);
 		uftAtlas.atlasName=atlasName;		
@@ -229,7 +238,9 @@ public class UFTAtlasEditor : EditorWindow {
 						uftAtlas.trimAllEntries();				
 					}					
 				}
-				atlasTexturesScrollPosition = EditorGUILayout.BeginScrollView(atlasTexturesScrollPosition);
+				if (imageNavigator!=null)
+					imageNavigator.OnGUI();
+				/*atlasTexturesScrollPosition = EditorGUILayout.BeginScrollView(atlasTexturesScrollPosition);
 				
 				if (uftAtlas.atlasEntries.Count >0){
 					List<string> names= uftAtlas.atlasEntries.ConvertAll(new System.Converter<UFTAtlasEntry,string>(uftAtlasEntryToString));
@@ -239,6 +250,7 @@ public class UFTAtlasEditor : EditorWindow {
 					}					
 				}		
 				EditorGUILayout.EndScrollView();
+				*/
 				EditorGUILayout.Separator();
 			EditorGUILayout.EndVertical();
 			
@@ -275,6 +287,7 @@ public class UFTAtlasEditor : EditorWindow {
 
 
 
+
 	void HandleDroppedObjects (Object[] objectReferences)
 	{
 		bool addedSomething=false;
@@ -287,13 +300,16 @@ public class UFTAtlasEditor : EditorWindow {
 					Debug.Log("one of texture is already on Canvas");
 				} else {
 					string assetPath=AssetDatabase.GetAssetPath(texture);					
-					uftAtlas.addNewEntry(texture,assetPath);
-						
+					UFTAtlasEntry entry = uftAtlas.addNewEntry(texture,assetPath);
+					ImageAsset imageAsset = new ImageAsset(texture);
+					imageAssetDict.Add(imageAsset, entry);
+					images.Add(imageAsset);
 				}
 				
 			}
 		}
-		
+
+		Debug.Log("images.length = "+images.Count);
 		if (!addedSomething)
 			Debug.Log("there was no any Texture2D in dropped content");
 	}
