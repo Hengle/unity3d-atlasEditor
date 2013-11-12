@@ -207,12 +207,17 @@ public class UFTAtlas : ScriptableObject {
 	void removeLatestEntryFromList ()
 	{		
 		UFTAtlasEntry latestEntry= atlasEntries[atlasEntries.Count-1];
+		removeEntry(latestEntry);
+	}
+
+	public void removeEntry(UFTAtlasEntry entry){
 		if (UFTAtlasEditorEventManager.onRemoveEntry!=null)
-			UFTAtlasEditorEventManager.onRemoveEntry(latestEntry);			
-		atlasEntries.Remove(latestEntry);
+			UFTAtlasEditorEventManager.onRemoveEntry(entry);			
+		atlasEntries.Remove(entry);
 		sendEventAtlasChanged();
 	}
-	
+
+
 	private void Repaint(){
 		if (UFTAtlasEditorEventManager.onNeedToRepaint!=null)
 			UFTAtlasEditorEventManager.onNeedToRepaint();

@@ -21,9 +21,6 @@ public class ImageAsset {
 	bool doCollapse;
 	static GUIStyle collapseStyle;
 
-
-
-
 	public ImageAsset(Texture2D texture){
 		this.texture = texture;
 		width = texture.width;
@@ -56,7 +53,8 @@ public class ImageAsset {
 		}
 
 
-		EditorGUILayout.BeginVertical();
+		EditorGUILayout.BeginVertical( GUILayout.Width(120f));
+
 
 		isMouse = Event.current.isMouse;
 		isMousUp = (Event.current.type == EventType.MouseUp);
@@ -75,23 +73,19 @@ public class ImageAsset {
 
 		if ( showDetails ){
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.Space();
-			EditorGUILayout.BeginVertical();
-			EditorGUILayout.TextArea(path);
-			EditorGUILayout.TextField("size (bytes)", ""+sizeInBytes);
-			EditorGUILayout.TextField("WIDTH x HEIGHT", widthHeight);
-
-			EditorGUILayout.EndVertical();
 			if (GUILayout.Button(texture,GUILayout.Width(50),GUILayout.Height(50)))
 				Selection.activeObject = texture;
+			EditorGUILayout.Space();
+			EditorGUILayout.BeginVertical();
+			GUILayout.TextArea(path, GUILayout.Width(140f));
 
+			showParam("size (b)", ""+sizeInBytes);
+			showParam("↔↕ (WxH)", widthHeight);
+
+			EditorGUILayout.EndVertical();
 			EditorGUILayout.EndHorizontal();
 		}
-
-
 		EditorGUILayout.EndVertical();
-
-
 
 
 		if (selected){
@@ -103,5 +97,14 @@ public class ImageAsset {
 
 		return returnStatus;
 	}
+
+	void showParam(string label, string value){
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField(label,GUILayout.Width(60));
+		EditorGUILayout.TextField(value);
+		EditorGUILayout.EndHorizontal();
+	}
+
+
 }
 

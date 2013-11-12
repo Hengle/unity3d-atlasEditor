@@ -10,6 +10,7 @@ using System;
 public class ImageNavigator {
 
 	public List<ImageAsset> images;
+	public GenericMenu contextMenu;
 	Vector2 scrollPosition;
 	int clickedId;
 	int previousClickedId = 0;
@@ -46,7 +47,6 @@ public class ImageNavigator {
 
 		doRepaint = false;
 		clickedId =-1;
-		Debug.Log("images == null"+images.Count);
 		if (images!=null){
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.FlexibleSpace();
@@ -74,6 +74,11 @@ public class ImageNavigator {
 					doRepaint = true;
 			}
 			EditorGUILayout.EndScrollView();
+			if (Event.current.type == EventType.ContextClick && GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition)){
+				contextMenu.ShowAsContext();
+			}
+
+
 
 			if (clickedId!= -1)
 				onImageSelect(clickedId);
@@ -83,8 +88,10 @@ public class ImageNavigator {
 	}
 
 
-	void resortImages(){
+	public void resortImages(){
 		List<ImageAsset> images2 =  new List<ImageAsset>();
+		if (images ==null)
+			return;
 		switch (sortField){
 
 		case SortField.HEIGHT:

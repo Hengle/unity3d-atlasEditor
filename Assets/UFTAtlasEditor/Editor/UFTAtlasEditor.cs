@@ -34,7 +34,7 @@ public class UFTAtlasEditor : EditorWindow {
 	public static int DEFAULT_ATLAS_WIDTH=512;
 	public static int DEFAULT_ATLAS_HEIGHT=512;
 	
-	
+	GenericMenu imageNavigatorContextMenu;
 	
 	[MenuItem ("Window/UFT Atlas Editor")]
     static void ShowWindow () {    		
@@ -48,6 +48,8 @@ public class UFTAtlasEditor : EditorWindow {
 		
 	}
 
+
+
 	public void initOnNewParameters ()
 	{
 		atlasMetadata=null;
@@ -57,11 +59,36 @@ public class UFTAtlasEditor : EditorWindow {
 		images = new List<ImageAsset>();
 		imageNavigator.initialize(Repaint);
 		imageNavigator.images = images;
+		initImageNavigatorContextMenu();
+		imageNavigator.contextMenu = imageNavigatorContextMenu;
 		//get free name
 		string atlasName=UFTFileUtil.getFileName(ATLAS_FILE_MASK);
 		uftAtlas.atlasName=atlasName;		
 		readWidthHeightFromEditorPrefs();		
 	}
+
+
+	void initImageNavigatorContextMenu(){
+		imageNavigatorContextMenu = new GenericMenu();
+		imageNavigatorContextMenu.AddItem(new GUIContent("delete"),true,onImageContextDelete);
+	}
+
+	void onImageContextDelete(){
+		List<ImageAsset> removeList = new List<ImageAsset>();
+		for (int i = 0; i < images.Count; i++) {
+			if (images[i].selected){
+				removeList.Add(images[i]);
+			}
+		}
+		foreach (ImageAsset img in removeList){
+			uftAtlas.atlasEntries.Remove(imageAssetDict[img]);
+			imageAssetDict.Remove(img);
+			images.Remove(img);
+		}
+		registerAtlasSnapshot();
+
+	}
+
 
 	public void registerListeners ()
 	{
@@ -152,6 +179,8 @@ public class UFTAtlasEditor : EditorWindow {
 	{
 		//Register Undo for the previous state	
 		Undo.SetSnapshotTarget(uftAtlas,"atlas");
+		//Undo.SetSnapshotTarget(this,"editor");
+
 		Undo.CreateSnapshot();
 		Undo.RegisterSnapshot();
 	}
@@ -181,7 +210,7 @@ public class UFTAtlasEditor : EditorWindow {
 		EditorGUILayout.Separator();
 		EditorGUILayout.BeginHorizontal();
 			
-			EditorGUILayout.BeginVertical (new GUILayoutOption[]{GUILayout.Width(200f)});
+			EditorGUILayout.BeginVertical (GUILayout.Width(200f));
 				EditorGUILayout.Separator();		
 				EditorGUILayout.LabelField("Atlas:");
 				string newName=EditorGUILayout.TextField("name",uftAtlas.atlasName);
@@ -240,17 +269,7 @@ public class UFTAtlasEditor : EditorWindow {
 				}
 				if (imageNavigator!=null)
 					imageNavigator.OnGUI();
-				/*atlasTexturesScrollPosition = EditorGUILayout.BeginScrollView(atlasTexturesScrollPosition);
-				
-				if (uftAtlas.atlasEntries.Count >0){
-					List<string> names= uftAtlas.atlasEntries.ConvertAll(new System.Converter<UFTAtlasEntry,string>(uftAtlasEntryToString));
-					names.Sort();
-					foreach (string name in names) {
-						EditorGUILayout.LabelField(name,GUILayout.MaxWidth(220f));
-					}					
-				}		
-				EditorGUILayout.EndScrollView();
-				*/
+			
 				EditorGUILayout.Separator();
 			EditorGUILayout.EndVertical();
 			
@@ -309,7 +328,6 @@ public class UFTAtlasEditor : EditorWindow {
 			}
 		}
 
-		Debug.Log("images.length = "+images.Count);
 		if (!addedSomething)
 			Debug.Log("there was no any Texture2D in dropped content");
 	}
